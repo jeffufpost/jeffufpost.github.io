@@ -1,0 +1,36 @@
+# Site settings
+title: Jeffrey Post
+description: 'Business Card Page'
+url: 'http://jeffufpost.github.io'
+baseurl: ''
+profilepic: '/images/jpost.jpg'
+bkimage: '/images/mtblanc.jpg'
+google_analytics: UA-XXXXXX-X
+font_awesome: 'e05d7d420a.js'
+
+author:
+  name: 'Jeffrey Post'
+  email: mrjeffreypost@gmail.com
+  twitter_username: iamjeffreypost
+#  facebook_username: jeffreypost
+  github_username:  jeffufpost
+  linkedin_username:  jeffrey-post-6591ab42
+  meetup_name: 
+
+# Build settings
+destination: _site
+markdown: kramdown
+highlighter: rouge
+
+sass:
+    sass_dir: _sass
+    style: compressed
+
+kramdown:
+  # use Github Flavored Markdown
+  input: GFM
+  # do not replace newlines by <br>s
+  hard_wrap: false
+
+#plugins: ['jekyll-paginate']
+exclude: ['README.md', 'screenshot-overview.png']
