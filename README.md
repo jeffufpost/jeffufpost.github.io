@@ -1,1 +1,1 @@
-Personal page use Jekyll-Uno theme
+Personal page using Jekyll-Uno-theme (from Thomas Zühlke)
