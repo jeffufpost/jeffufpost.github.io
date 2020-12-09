@@ -1,7 +1,7 @@
 # Site settings
 title: Jeffrey Post
 description: 'Business Card Page'
-url: 'http://jeffufpost.github.io'
+url: 'https://jeffreypost.dev'
 baseurl: ''
 profilepic: '/images/jpost.jpg'
 bkimage: '/images/mtblanc.jpg'
@@ -10,7 +10,7 @@ font_awesome: 'e05d7d420a.js'
 
 author:
   name: 'Jeffrey Post'
-  email: mrjeffreypost@gmail.com
+  email: contact@jeffreypost.dev
   twitter_username: iamjeffreypost
 #  facebook_username: jeffreypost
   github_username:  jeffufpost
