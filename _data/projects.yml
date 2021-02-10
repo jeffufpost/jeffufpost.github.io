@@ -7,6 +7,12 @@
   img: https://user-images.githubusercontent.com/1926010/82741533-632d9700-9d53-11ea-90db-4b77fea6addd.png
   desc: Blog page for some of my projects
 
+- name: Socio-behavioral characteristics and HIV
+  website: https://renkulab.io/gitlab/jeffrey.post/ssa_hiv_ml
+#  repo: scattered-thoughts
+#  img: https://user-images.githubusercontent.com/1926010/82741533-632d9700-9d53-11ea-90db-4b77fea6addd.png
+  desc: Longitudinal analysis of socio-behavioral characteristics and ART coverage & HIV testing in 29 SSA countries
+
 - name: Jekyll Theme
   gh_user: tzuehlke
   repo: jekyll-uno-timeline
