@@ -1,0 +1,49 @@
+# Recent posts from Scattered Thoughts, newest first. The homepage shows the first 6.
+# Add new posts at the top. Paths are relative to site.blog_url.
+- date: 2021-09-23
+  title: Stochastic HIV model, but faster
+  path: posts/2021-09-23-stochastic-HIV-model-fast/2021-09-23-stochastic-HIV-model-fast.html
+
+- date: 2021-05-05
+  title: A stochastic HIV model
+  path: posts/2021-05-05-stochastic-HIV-model/2021-05-05-stochastic-HIV-model.html
+
+- date: 2020-06-02
+  title: "Epidemic modeling, part 8: studying real-world data"
+  path: posts/2020-06-02-real-world/2020-06-02-real-world.html
+
+- date: 2020-04-15
+  title: Scraping COVID-19 data from data.gouv.fr
+  path: posts/2020-04-15-web-scraping/2020-04-15-web-scraping.html
+
+- date: 2020-04-12
+  title: "Testing: what to be aware of"
+  path: posts/2020-04-12-on-testing/2020-04-12-on-testing.html
+
+- date: 2020-04-03
+  title: "Epidemic modeling, part 7: convolution, deconvolution and daily data"
+  path: posts/2020-04-02-convolution/2020-04-02-convolution.html
+
+- date: 2020-04-02
+  title: "Epidemic modeling, part 6: control measures"
+  path: posts/2020-04-02-control-measures/2020-04-02-control-measures.html
+
+- date: 2020-04-01
+  title: "Epidemic modeling, part 5: R0 and the infectious peak"
+  path: posts/2020-04-01-diagnosing-R0-and-peak-infectious/2020-04-01-diagnosing-R0-and-peak-infectious.html
+
+- date: 2020-03-31
+  title: "Epidemic modeling, part 4: a stochastic SEIR model"
+  path: posts/2020-03-31-stochastic_model/2020-03-31-stochastic_model.html
+
+- date: 2020-03-25
+  title: "Epidemic modeling, part 3: the flaw in the deterministic model"
+  path: posts/2020-03-25-proba-distrib/2020-03-25-proba-distrib.html
+
+- date: 2020-03-18
+  title: "Epidemic modeling, part 2: a deterministic SEIR model"
+  path: posts/2020-03-18-deterministic-numerical-solutions/2020-03-18-deterministic-numerical-solutions.html
+
+- date: 2020-03-15
+  title: "Epidemic modeling, part 1: compartmental models"
+  path: posts/2020-03-15-compartmentalization/2020-03-15-compartmentalization.html

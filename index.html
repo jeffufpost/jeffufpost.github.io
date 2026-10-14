@@ -2,36 +2,59 @@
 layout: default
 ---
 
-<!--<div class="main-post-list">-->
+<header class="intro">
+  <div>
+    <h1>{{ site.author.name }}</h1>
+    <p class="role">{{ site.tagline }}</p>
+  </div>
+  <figure class="seir">
+    {% include seir.svg %}
+    <figcaption>
+      <span><i class="s"></i>S</span><span><i class="e"></i>E</span><span><i class="i"></i>I</span><span><i class="r"></i>R</span>
+    </figcaption>
+  </figure>
+</header>
 
-  <ul class="timeline">
-    
+<!-- Draft bio: rewrite in your own words. -->
+<p class="bio">
+  I'm an engineer by training, first electrical and then biomedical, and I now work as a support manager.
+  Outside work I'm interested in data, electronics, governance, development and global health.
+  I write about epidemic modelling on <a href="{{ site.blog_url }}">Scattered Thoughts</a>.
+</p>
+
+<nav class="links" aria-label="Elsewhere">
+  {% if site.author.github_username %}<a href="https://github.com/{{ site.author.github_username }}">github/{{ site.author.github_username }}</a>{% endif %}
+  {% if site.author.linkedin_username %}<a href="https://www.linkedin.com/in/{{ site.author.linkedin_username }}">linkedin</a>{% endif %}
+  {% if site.author.renkulab_username %}<a href="https://renkulab.io/gitlab/{{ site.author.renkulab_username }}">renkulab</a>{% endif %}
+  <a href="mailto:{{ site.author.email }}">{{ site.author.email }}</a>
+  <a href="mailto:{{ site.author.email }}?subject=Request%20for%20CV">request CV</a>
+</nav>
+
+<section>
+  <h2>Work</h2>
+  <ol class="entries">
     {% for project in site.data.projects %}
-
-      <li class="timeline-inverted">
-        <div class="timeline-image">
-          <img class="img-me" src="{{ project.img | prepend: site.baseurl }}" alt="">
-        </div>
-        <div class="timeline-panel">
-          <div class="timeline-heading">
-            <h4><a href="{{ project.website }}" target="_blank">{{ project.name }}</a></h4>
-          </div>
-          <div class="timeline-body">
-            {{ project.desc | markdownify }}
-            <div website="{{ project.website }}" class="ghbtn" style="margin-top: 10px;">
-              <a target="_blank" href="{{ project.website}}">Find out more</a>&emsp;
-              <div style="height: 10px;"></div>
-          </div>
-        </div>
-      </li>
-    {% endfor %}
-    <!--
-    <li class="timeline-inverted">
-      <div class="timeline-image">
-        <img class="user-image" src="{{site.baseurl}}{{ site.timeline-img }}" alt="">
+    <li>
+      <span class="k">{{ project.year }}</span>
+      <div>
+        {% if project.url %}<a class="t" href="{{ project.url }}">{{ project.name }}</a>{% else %}<span class="t">{{ project.name }}</span>{% endif %}
+        {% if project.status %}<span class="chip">{{ project.status }}</span>{% elsif project.tag %}<span class="chip">{{ project.tag }}</span>{% endif %}
+        <p>{{ project.desc }}</p>
       </div>
-    </li> -->
-  </ul>
+    </li>
+    {% endfor %}
+  </ol>
+</section>
 
-<!--</div>-->
-
+<section>
+  <h2>Writing</h2>
+  <ol class="entries">
+    {% for post in site.data.writing limit: 6 %}
+    <li>
+      <span class="k">{{ post.date | date: '%Y-%m-%d' }}</span>
+      <div><a class="t" href="{{ site.blog_url }}{{ post.path }}">{{ post.title }}</a></div>
+    </li>
+    {% endfor %}
+  </ol>
+  <a class="more" href="{{ site.blog_url }}">All {{ site.data.writing.size }} posts on Scattered Thoughts →</a>
+</section>

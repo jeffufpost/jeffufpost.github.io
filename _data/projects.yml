@@ -1,35 +1,18 @@
-# projects section data
-# If you don't have language feature(language.yml is empty), ignore "i18n" items
-# Suggest projects' img be located at '/static/assets/img/landing', and edit following img items.
-- name: Blog page
-  website: https://jeffreypost.dev/scattered-thoughts
-#  gh_user: jeffufpost
-#  repo: scattered-thoughts
-  img: https://user-images.githubusercontent.com/1926010/82741533-632d9700-9d53-11ea-90db-4b77fea6addd.png
-  desc: Blog page
-
+# Work list on the homepage, newest first.
+# status: set to "archived" for projects that are no longer online or maintained.
 - name: Socio-behavioral characteristics and HIV
-  website: https://renkulab.io/gitlab/jeffrey.post/ssa_hiv_ml
-#  repo: scattered-thoughts
-  img: images/map_africa.png
-  desc: Longitudinal analysis of socio-behavioral characteristics and ART coverage & HIV testing in 29 SSA countries
-
-#- name: Jekyll Theme
-#  gh_user: tzuehlke
-#  repo: jekyll-uno-timeline
-#  img: https://raw.githubusercontent.com/tzuehlke/jekyll-uno-timeline/master/screenshot-overview.png
-#  desc: This Jekyll Theme. Based on the Uno-Theme with a list of projects as timeline. Like a business card.
-
-- name: COVID-19 Tracker
-  website: https://covid19.jeffreypost.dev
-#  gh_user: jeffufpost
-#  repo: sars-cov-2-world-tracker
-  img: https://user-images.githubusercontent.com/1926010/82741564-bbfd2f80-9d53-11ea-8532-990364a58c72.png
-  desc: A simple tracker for COVID-19, including a map of the world and a map of France
+  url: https://renkulab.io/gitlab/jeffrey.post/ssa_hiv_ml
+  year: 2021
+  tag: renkulab
+  desc: Longitudinal analysis of socio-behavioral characteristics and ART coverage & HIV testing in 29 sub-Saharan African countries.
 
 - name: Shazam Downloader
-  website: https://github.com/jeffufpost/shazam_downloader
-#  gh_user: jeffufpost
-#  repo: shazam_downloader
-  img: https://user-images.githubusercontent.com/1926010/82741583-1b5b3f80-9d54-11ea-869e-c4459e1d289a.png
-  desc: Python script to list your Shazam'd songs for use with Deemix
+  url: https://github.com/jeffufpost/shazam_downloader
+  year: 2020
+  tag: python
+  desc: Python script to list your Shazam'd songs for use with Deemix.
+
+- name: COVID-19 Tracker
+  year: 2020
+  status: archived
+  desc: A simple tracker for COVID-19, including a map of the world and a map of France.

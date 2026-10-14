@@ -1,60 +1,248 @@
 ---
 ---
-@import "uno";
-@import "tables";
-@import "monokai";
-@import "timeline";
+// Notebook theme. Colours and fonts are shared with the Quarto blog
+// (scattered-thoughts/theme-light.scss and theme-dark.scss): change both together.
 
-/* Modifications */
-
-pre.highlight,
-.highlight pre {
-  padding: 10px;
+:root {
+  --bg: #fcfcfb;
+  --ink: #191c20;
+  --muted: #646b75;
+  --line: #e6e7ea;
+  --accent: #0c7363;
+  --seir-s: #9aa3ad;
+  --seir-e: #c9a227;
+  --seir-i: #b23a3a;
+  --seir-r: #0c7363;
+  --sans: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  color-scheme: light;
 }
 
-pre.highlight code,
-.highlight pre code {
-  white-space: pre-wrap;
+:root[data-theme="dark"] {
+  --bg: #121514;
+  --ink: #e4e7e5;
+  --muted: #9aa29e;
+  --line: #262b29;
+  --accent: #4fb8a5;
+  --seir-s: #7d8682;
+  --seir-e: #d9b44a;
+  --seir-i: #e06c6c;
+  --seir-r: #4fb8a5;
+  color-scheme: dark;
 }
 
-.btn,
-.navigation__item a {
-  margin: 5px 0;
+*, *::before, *::after { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 16px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+.col {
+  max-width: 700px;
+  margin: 0 auto;
+  // unquote() keeps GitHub Pages' older Sass compiler from evaluating CSS max() itself.
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-left: unquote("max(20px, env(safe-area-inset-left))");
+  padding-right: unquote("max(20px, env(safe-area-inset-right))");
+}
+
+main.col {
+  display: grid;
+  gap: 44px;
+  padding-top: 72px;
+}
+
+a { color: inherit; }
+
+a.t, .bio a, .links a, .more {
+  text-decoration: underline;
+  text-decoration-color: var(--accent);
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+a:hover { color: var(--accent); }
+
+a:focus-visible, button:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+// Intro
+
+.intro {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 20px;
+  align-items: end;
+}
+
+h1 {
+  margin: 0;
+  font-size: 32px;
+  font-weight: 600;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+.role {
+  margin: 4px 0 0;
+  color: var(--muted);
+}
+
+.seir {
+  width: 150px;
+  margin: 0;
+
+  svg { display: block; width: 100%; height: auto; }
+  path { fill: none; stroke-width: 1.5; stroke-linejoin: round; }
+  path.i { stroke-width: 2; }
+
+  figcaption {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 10.5px;
+    color: var(--muted);
+  }
+
+  i {
+    display: inline-block;
+    width: 8px;
+    height: 2px;
+    margin-right: 3px;
+    vertical-align: middle;
+  }
+}
+
+.s { stroke: var(--seir-s); background: var(--seir-s); }
+.e { stroke: var(--seir-e); background: var(--seir-e); }
+.i { stroke: var(--seir-i); background: var(--seir-i); }
+.r { stroke: var(--seir-r); background: var(--seir-r); }
+
+.bio {
+  margin: 0;
+  font-size: 18px;
+  line-height: 1.65;
+  max-width: 62ch;
+}
+
+.links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 20px;
+  font-family: var(--mono);
+  font-size: 13.5px;
+}
+
+// Work and writing lists
+
+h2 {
+  margin: 0 0 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.entries {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+
+  li {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 16px;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .k {
+    padding-top: 2px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .t { font-weight: 500; }
+
+  p {
+    margin: 2px 0 0;
+    font-size: 14.5px;
+    color: var(--muted);
+  }
+}
+
+.chip {
+  margin-left: 6px;
+  padding: 0 6px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
   white-space: nowrap;
 }
 
-.pagination__page-number {
+.more {
   display: inline-block;
-  padding: 10px;
+  margin-top: 14px;
+  font-size: 14.5px;
 }
 
-.categories a,
-.tags a {
-  border: 1px solid #e25440;
-  border-radius: 20px;
-  color: #e25440;
-  display: inline-block;
+// Footer
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-top: 56px;
+  padding-top: 20px;
+  padding-bottom: 40px;
+  border-top: 1px solid var(--line);
+  font-family: var(--mono);
   font-size: 12px;
-  margin: 5px 0;
-  padding: 5px 10px;
-  text-shadow: none;
-  white-space: nowrap;
+  color: var(--muted);
 }
 
-.post-meta__tags {
-  font-size: 12px;
-  padding: 0 5px;
+.theme-toggle {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 3px 10px;
+  cursor: pointer;
+
+  &:hover { color: var(--accent); border-color: var(--accent); }
 }
 
-.footer__copyright {
-    margin: 0 20px 10px;
+.when-dark { display: none; }
+:root[data-theme="dark"] {
+  .when-light { display: none; }
+  .when-dark { display: inline; }
 }
 
-.user-image {
-  margin-bottom: 1.2em;
-  position: relative;
-  width: 100px;
-  height: 100px;
-  border: 3px solid #fff;
-  border-radius:100%;
+@media (max-width: 560px) {
+  main.col { padding-top: 40px; gap: 36px; }
+  h1 { font-size: 27px; }
+  .intro { grid-template-columns: 1fr; }
+  .seir { width: 100%; max-width: 220px; }
+  .entries li { grid-template-columns: 1fr; gap: 2px; }
 }

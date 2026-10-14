@@ -1,7 +1,15 @@
-<footer class="footer">
-  <span class="footer__copyright">&copy; {{ site.time | date: '%Y' }} {{ site.author.name }}. All rights reserved.</span>
+<footer class="col footer">
+  <span>© {{ site.time | date: '%Y' }} {{ site.author.name }}</span>
+  <button type="button" class="theme-toggle" aria-label="Switch between light and dark mode">
+    <span class="when-light">Dark mode</span><span class="when-dark">Light mode</span>
+  </button>
 </footer>
 
-<script type="text/javascript" src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-<script type="text/javascript" src="{{ site.baseurl }}/js/main.js?{{site.time | date: '%s%N'}}"></script>
-<script type="text/javascript" src="{{ site.baseurl }}/js/github_api.js?{{site.time | date: '%s%N'}}"></script>
+<script>
+  document.querySelector('.theme-toggle').addEventListener('click', function () {
+    var dark = document.documentElement.getAttribute('data-theme') !== 'dark';
+    if (dark) document.documentElement.setAttribute('data-theme', 'dark');
+    else document.documentElement.removeAttribute('data-theme');
+    try { localStorage.setItem('quarto-color-scheme', dark ? 'alternate' : 'default') } catch (e) {}
+  });
+</script>
