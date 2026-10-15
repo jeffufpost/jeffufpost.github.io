@@ -47,3 +47,7 @@
 - date: 2020-03-15
   title: "Epidemic modeling, part 1: compartmental models"
   path: posts/2020-03-15-compartmentalization/2020-03-15-compartmentalization.html
+
+- date: 2020-03-12
+  title: COVID-19 tracker map
+  path: posts/2020-03-12-COVID-19-Tracker/2020-03-12-COVID-19-Tracker.html
