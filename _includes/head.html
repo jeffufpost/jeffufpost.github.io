@@ -22,11 +22,11 @@
   <link rel="icon" type="image/png" href="{{ '/images/favicons/favicon-16x16.png' | relative_url }}" sizes="16x16">
   <link rel="apple-touch-icon" sizes="180x180" href="{{ '/images/favicons/apple-touch-icon-180x180.png' | relative_url }}">
   <link rel="manifest" href="{{ '/images/favicons/manifest.json' | relative_url }}">
-  <meta name="theme-color" content="#fcfcfb">
+  <meta name="theme-color" content="#121514">
 
-  <!-- Same storage key and values as the Quarto blog, so the light/dark choice carries across both sites. -->
+  <!-- Dark by default. Same storage key and values as the Quarto blog, so the light/dark choice carries across both sites. -->
   <script>
-    try { if (localStorage.getItem('quarto-color-scheme') === 'alternate') document.documentElement.setAttribute('data-theme', 'dark') } catch (e) {}
+    try { if (localStorage.getItem('quarto-color-scheme') === 'default') document.documentElement.removeAttribute('data-theme') } catch (e) {}
   </script>
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
