@@ -1,15 +1,122 @@
 ---
 title: "Tuning underfloor heating with Home Assistant data"
-description: "Using temperature history to stop the floor overshooting."
-date: 2026-11-16
+description: "My floor heating is run by a box that only knows the outdoor temperature. Two weeks of Home Assistant history showed what it actually does, and how much to turn it down."
+date: 2026-11-14
 image: thumb.svg
 pillar: homelab
-status: coming-soon
+toc: true
 include-in-header:
-  text: <meta name="robots" content="noindex">
-
+  - text: |
+      <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 ---
 
-[Coming soon]{.chip .chip-coming-soon}
+My house is heated mostly by its floor. Electric cables are buried in the concrete slabs, they heat the slab during the cheap night-time hours, and the slab gives that heat back slowly through the day. When it's on, it draws about 4.7 kW.
 
-This post is being written. Check back soon, or see what else is on the [homepage](/).
+At the start of November the first cold nights arrived. The floor came on, the living room climbed past 22°C, and the floor was using about 25 kWh a night. That's warmer than we wanted and more energy than it needed. This post is about how I used the data Home Assistant was already collecting to understand what the heating actually does, and to roughly halve what it uses at any given outdoor temperature.
+
+## Two controls in series {#how-it-works}
+
+The floor has two controls, and both have to say yes before it heats.
+
+**Home Assistant decides *when*.** A smart breaker feeds the heating circuit. Home Assistant closes it only during the two off-peak windows on my tariff (00:22–06:22 and 14:52–16:52), and only while the living room is below a cutoff: 21.5°C in winter mode. The logic is a small Jinja template. This is the core of it:
+
+```jinja
+{%- set limit = {'Winter': 21.5, 'Summer': 19, 'Away': 15}.get(mode, 21.5) -%}
+{%- set sched = [(0, 22, 6, 22), (14, 52, 16, 52)] -%}   {# off-peak windows #}
+...
+{%- if active and temp < limit -%}       Heating
+{%- elif active -%}                      Blocked (warm enough)
+{%- else -%}                             Scheduled
+```
+
+An automation checks that state every 15 minutes and on every change, and opens or closes the breaker to match. If the template's sensor goes missing for five minutes, the breaker opens. A heating system that fails *off* is annoying, but one that fails *on* gets expensive.
+
+**A regulator decides *how much*.** Inside the window, a dedicated floor-heating regulator on the DIN rail switches the slabs. It has an outdoor temperature probe and no room probe at all. Every hour it runs the floor for a share of that hour, worked out from the outdoor temperature only:
+
+$$
+\text{share} = \frac{F2 - T_\text{outdoor}}{F3}, \quad \text{limited to 0–100\%}
+$$
+
+`F2` is the outdoor temperature at which heating stops (12°C here) and `F3` is how many degrees below that the floor runs flat out. A lower `F3` means a steeper curve and more heat. Here is what three values of `F3` mean in practice:
+
+{{< include figures/fig1_curve.html >}}
+
+So the regulator never finds out that the room is already warm. The only feedback in the whole system is Home Assistant's 21.5°C cutoff, and that's a blunt one: it either allows a whole window or blocks it.
+
+## What two weeks of data showed {#the-data}
+
+Home Assistant already recorded everything I needed: the living room temperature, the outdoor temperature from a nearby MeteoSwiss station, the floor's power from a clamp on its circuit, and the temperature of the chimney flue, which tells me when we have a fire going. The chart below shows all of it at hourly resolution. The orange bars are the floor's energy each hour; use the tabs to swap what's drawn against them.
+
+{{< include figures/fig2_fortnight.html >}}
+
+A few things stood out once it was all on one chart.
+
+**The first nights were far too generous.** With `F3` at 6, the floor ran at 80–90% of each hour through the night and used 24–25 kWh. The living room went from about 13°C (the house had been empty and cold) to over 22°C within three days. The fires helped, and the "Fires" tab shows there was one almost every evening.
+
+**The slab answers in about an hour and a half.** On both of the first nights, the living room stopped cooling about 90 minutes after the floor switched on. That's faster than I expected for a storage floor, and it means the evening temperature is a reasonable proxy for "did last night store enough".
+
+**The regulator's sums check out, with one correction.** The regulator's hour appears to restart when the breaker closes at 00:22, so its off-time can be read straight off the power data. Comparing that with the formula, the run times matched when I used the weather station's four-hour average temperature minus about 0.4°C. That four-hour average is the regulator's own smoothing setting, and the 0.4°C is the difference between its probe and the station.
+
+**Home Assistant's own outdoor sensor was lying.** My outdoor sensor read up to 2°C warmer than both the regulator's probe and the weather station at night. It's probably mounted too close to the house. If I'd tuned against it, every calculation would have been off. The station's data now feeds the dashboard instead.
+
+**One mystery remains.** In the last days of October the breaker closed every night at 9–10°C outside, which by the formula should have run the floor for nearly half of every hour, but it drew nothing at all. Then on 1 November at 15:27 it started, and it has followed the formula ever since. I still don't know what changed.
+
+## Turning it down {#tuning}
+
+With the curve and the data side by side, the change was simple: make the curve shallower. I raised `F3` from 6 to 10 on 3 November, then to 12 on 8 November after a cold night (about 2°C on average, below freezing at its lowest) used 25 kWh and felt like more than the house needed.
+
+I also changed the regulator's off-peak setting to match my actual tariff, six hours at night plus two in the afternoon. That had a side effect I didn't expect, covered [below](#what-broke).
+
+Each dot below is one night: how cold it was and how much energy the floor used. The thin lines are what the formula predicts for each setting.
+
+{{< include figures/fig3_nights.html >}}
+
+The nights follow the predicted lines closely, which is reassuring: the regulator is doing exactly what its settings say. With `F3` at 12, a night around 9–10°C now costs 6–8 kWh, where the old setting would have used about 13. At the off-peak price of about €0.135 per kWh, that's roughly €0.95 a night instead of €1.80, and the gap grows as it gets colder: at 6°C it's about €2 against €3.80.
+
+### Is 12 the right number? Not proven yet {#not-proven}
+
+I'd love to say the house is now perfectly tuned. It isn't proven yet, and the data says why.
+
+- **The weather got milder at the same time.** The second week was 2–4°C warmer than the first. Less heat was needed anyway, so the lower energy use isn't all down to the new setting.
+- **Fires hide everything.** A wood fire can put several degrees into the living room in an evening, and there was one on nearly every day in the chart. The floor only has to cover what the fire doesn't.
+- **The slab was still warming.** On the first nights, the floor was heating cold concrete as well as the house.
+
+So I wrote down a rule before looking at the results, to stop myself tuning to noise. On an evening without a fire, check the living room just before the night window opens. If it's below about 19.5°C, go back to a steeper curve (`F3` of 8). If it's 21°C or more, lower `F2` instead, so heating starts at a colder outdoor temperature. Then wait two or three nights before judging again. The slab is slow, and anything faster is chasing yesterday's weather.
+
+## A dashboard that predicts the floor {#dashboard}
+
+Since Home Assistant can't read the regulator, it keeps a copy of its settings in a template and runs the same formula itself:
+
+```jinja
+{%- set F2 = 12 -%}
+{%- set F3 = 12 -%}
+{%- set PROBE_OFFSET = -0.4 -%}   {# regulator probe vs weather station #}
+
+{%- macro duty(temp) -%}
+{{ ([0, [100, (F2 - (temp + PROBE_OFFSET)) / F3 * 100] | min] | max) | round(0) }}
+{%- endmacro -%}
+```
+
+That gives a "Heating" dashboard with three useful things on it:
+
+- **Expected against actual.** The share the floor *should* be running at now, next to what it really ran in the last hour. When they disagree, either the settings copy is out of date or something is wrong with the hardware.
+- **An eight-day forecast.** The same formula applied to MeteoSwiss's hourly forecast gives the expected energy for each coming night, so a cold snap shows up on the dashboard days before it shows up on the bill.
+- **Today's energy**, expected and actual, in kWh.
+
+The catch is that the copy has to be kept in sync by hand. If I change `F3` on the regulator and forget the template, the "expected" line quietly drifts away from reality. There's a comment at the top of the template saying exactly that, because I will forget.
+
+## What broke {#what-broke}
+
+**The afternoon window stopped heating.** After I set the regulator's off-peak type to "6 hours plus 2 hours", the afternoon window gave nothing at 7°C outside, even though the night window ran at 80%. The regulator's own load readings showed 0%, so it was the regulator's decision, not Home Assistant's. My reading of the manual is that it now treats the afternoon as *daytime* heating, with a much lower threshold. The manual doesn't spell this out for my mode, so the dashboard's forecast now assumes it, and the assumption is marked as untested.
+
+**The floor's meter went blind for two days.** The clamp measuring the floor's circuit read zero from 3 to 5 November, while the main meter clearly showed the floor running. I'd been working in the electrical panel that week, and the clamp was probably knocked. That's the grey band in the chart. The lesson: when two meters disagree, believe the one that adds up, and make the dashboard show both.
+
+**A YAML key called `off`.** While I was at it, I added Home Assistant control of the bedroom radiators, as a top-up for rooms the floor doesn't reach well. The automation failed on every run for three hours. I'd named a setting `off:`, and YAML reads an unquoted `off` as the boolean `false`, so the template was looking up a key that didn't exist. Renaming it to `manual_off` fixed it. Never name a YAML key `off`, `on`, `yes` or `no` without quotes.
+
+## What's next {#whats-next}
+
+- **A cold week without fires** to settle `F3` with the rule above.
+- **Finding out whether the slab has a temperature probe.** The regulator supports a floor limiter, but only if a probe is fitted, and I don't know yet whether one is.
+- **Solar.** Solar panels are coming, and a slab that stores a whole night's heat is a big, cheap battery for winter surplus. The plan is to let Home Assistant open the floor's window when the panels produce more than the house uses. That's a post for when it exists.
+
+If you have a storage floor and found a better way to tune it than waiting for cold nights, I'd like to hear about it: [contact@jeffreypost.dev](mailto:contact@jeffreypost.dev).
