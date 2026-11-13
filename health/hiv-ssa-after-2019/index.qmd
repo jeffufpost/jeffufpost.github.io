@@ -1,6 +1,6 @@
 ---
 title: "What happened after 2019? Five more years of HIV data for my thesis"
-description: "My master's thesis stopped in 2019. I extended its epidemic analysis to 2024 with the latest UNAIDS estimates: transmission converged across the groups, incidence kept falling, and the past got rewritten."
+description: "My master's thesis stopped in 2019. I extended it to 2024 with the latest UNAIDS estimates, which also rewrote the history it was built on. Its main conclusion held up; the country-by-country details didn't all survive."
 date: 2026-11-13
 image: ../images/covers/hiv-ssa-after-2019.svg
 include-in-header:
@@ -9,6 +9,8 @@ include-in-header:
 ---
 
 My [master's thesis](../hiv-ssa-thesis/) grouped 29 Sub-Saharan African countries in two ways: by their social and behavioural characteristics, and by how fast their HIV epidemics slowed down. Its data stopped in 2019. UNAIDS now publishes estimates up to 2024, so I went back and asked what happened next.
+
+**The short answer: the thesis's main conclusion holds up.** The new release doesn't just add five years. It re-estimates every year back to 1990, and for some countries the history changed a lot. Even so, the two patterns the thesis concluded from are still there. Countries' social and behavioural profiles still line up with *how high* their epidemics peaked, and the epidemic groups still line up with *when* they peaked. What didn't survive is the exact list of which country belongs to which epidemic group. The details are [further down](#the-past-moved-too); first, what happened after 2019.
 
 ::: {.callout-note appearance="simple"}
 **What's updated, and what isn't.** Only the epidemic side. The sociobehavioural groups come from national survey (DHS) indicators, and I have no newer national indicators to update them with, so they stay exactly as the thesis defined them. The HIV estimates are UNAIDS's latest, downloaded in May 2026 and running to 2024. Liberia has no incidence figures in this release, so it's left out: 28 countries instead of 29.
