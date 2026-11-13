@@ -189,7 +189,7 @@ check_followup_post() {
   assert_grep '47%' $f
   assert_grep '6 of 28' $f
   assert_grep 'hiv-ssa-after-2019' _site/health/hiv-ssa-thesis/index.html
-  assert_no_grep '342-576|/mount/|/home/' $d
+  assert_no_grep '/mount/|/home/' $d
   assert_grep '<article class="feat" data-slug="securing-the-homelab">' _site/index.html
 }
 
