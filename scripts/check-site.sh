@@ -159,6 +159,9 @@ check_thesis_post() {
   assert_grep 'male circumcision and attitudes to wife beating along the second' $f
   assert_grep 'fell only slowly until about 1995' $f
   assert_no_grep 'Two changes were needed' $f
+  [ "$(grep -o 'role="tab"' $f | wc -l)" -eq 11 ] || fail "expected 11 figure tabs in $f"
+  assert_no_grep 'the menu' $f
+  assert_grep '\.thesis-tabs button\[aria-selected=.?true.?\]' "$(ls _site/site_libs/bootstrap/bootstrap-*.min.css | head -1)"
   assert_grep 'hiv-ssa-thesis' _site/health/stochastic-hiv-model/index.html
   assert_no_grep '342-576|/mount/|/home/' $d
   # not featured: the homelab security post keeps the slot

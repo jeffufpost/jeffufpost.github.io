@@ -102,7 +102,7 @@ The shape holds from 2000 to 2018, but all three groups drift left along the fir
 {{< include figures/fig3_cascade.html >}}
 ```
 
-Figure 3. Median across each cluster's surveys, by period. Use the menu to switch indicators.
+Figure 3. Median across each cluster's surveys, by period. Use the tabs to switch indicators.
 
 The leftward drift is mostly the HIV response itself. In Southern & Eastern Africa, the share of women who had ever been tested for HIV went from **12% to 83%**. In the other two groups it went from **4% and 7% to 44%**. ART coverage went from essentially zero to between 46% and 60%, and acceptance of people living with HIV rose everywhere. In the Sahel, a fall in the share of women who work partly offset the shift.
 
@@ -112,7 +112,7 @@ The leftward drift is mostly the HIV response itself. In Southern & Eastern Afri
 {{< include figures/fig4_epidemics.html >}}
 ```
 
-Figure 4. Averages across countries in each cluster, 1990 to 2019. Use the menu to switch between incidence and the effective contact rate β, grouped by sociobehavioural cluster or by β cluster.
+Figure 4. Averages across countries in each cluster, 1990 to 2019. Use the tabs to switch between incidence and the effective contact rate β, grouped by sociobehavioural cluster or by β cluster.
 
 Countries in the same sociobehavioural group had similar HIV incidence, and the groups differed sharply. Southern & Eastern Africa averaged around 17 new infections per 1,000 adults in 1990; the Sahel, under 2. That gap was already there in 1990. **I found no link between how much a country's indicators changed after 2000 and how much its incidence fell.**
 
@@ -127,7 +127,7 @@ Clustering the β curves themselves gives two groups that don't follow the socio
 {{< include figures/fig5_maps.html >}}
 ```
 
-Figure 5. Switch between the four maps with the menu. Grey countries were not part of the study.
+Figure 5. Switch between the four maps with the tabs. Grey countries were not part of the study.
 
 Switch between the maps and a pattern appears. **The sociobehavioural clusters line up with how high each epidemic peaked. The β clusters line up with when it peaked**: a median peak year of 1991–92 for the early-decline group, against 1996 for the late one.
 

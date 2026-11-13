@@ -130,3 +130,14 @@ main.content { max-width: 70ch; }
 .netdiag a.netlink:focus-visible .frame { stroke: $c-apps; stroke-width: 3.5; }
 .netdiag a.netlink .cue { font-size: 13px; fill: $c-homelab; }
 @media (prefers-reduced-motion: reduce) { .netdiag a.netlink .frame { transition: none; } }
+
+// Thesis post: tabs above multi-view Plotly figures.
+.thesis-tabs { display: flex; flex-wrap: wrap; gap: 0.25rem; border-bottom: 1px solid $line; margin: 0 0 0.5rem; }
+.thesis-tabs button {
+  font-family: $font-family-sans-serif; font-size: 0.85rem; font-weight: 600; color: $muted;
+  background: none; border: 0; border-bottom: 2px solid transparent; margin-bottom: -1px;
+  padding: 0.45rem 0.75rem; cursor: pointer;
+  &:hover { color: $ink; }
+  &[aria-selected="true"] { color: $ink; border-bottom-color: $c-health; }
+  &:focus-visible { outline: 2px solid $c-health; outline-offset: 2px; border-radius: 4px; }
+}
