@@ -155,3 +155,12 @@ main.content { max-width: 70ch; }
   &[aria-selected="true"] { color: $ink; border-bottom-color: $c-health; }
   &:focus-visible { outline: 2px solid $c-health; outline-offset: 2px; border-radius: 4px; }
 }
+
+// Homelab tour: grid of what runs, grouped by job.
+.stackgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(15rem, 1fr)); gap: 0.75rem; margin: 1.25rem 0 1.5rem; }
+.stackgrid section { background: $card; border: 1px solid $line; border-radius: 10px; padding: 0.8rem 0.95rem; }
+.stackgrid h4 { font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: $c-homelab; margin: 0 0 0.5rem; }
+.stackgrid ul { list-style: none; padding: 0; margin: 0; font-size: 0.9rem; }
+.stackgrid li { margin: 0.2rem 0; }
+.stackgrid li b { font-weight: 600; }
+.stackgrid li span { color: $muted; }

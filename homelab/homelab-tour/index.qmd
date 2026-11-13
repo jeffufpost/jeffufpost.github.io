@@ -1,14 +1,166 @@
 ---
 title: "My homelab in 2026: what runs, how it's wired, and what broke"
-description: "A tour of the stack: reverse proxy, single sign-on, backups, monitoring, and the self-hosted analytics behind this page."
-date: 2026-11-20
+description: "One box, about seventy containers and a handful of rules: the hardware, every service grouped by what it's for, how I keep it updated and watched, and the failures that taught me the most."
+date: 2026-11-14
 image: thumb.svg
 pillar: homelab
-status: coming-soon
-include-in-header:
-  text: <meta name="robots" content="noindex">
+toc: true
 ---
 
-[Coming soon]{.chip .chip-coming-soon}
+My homelab is a single computer. It runs Home Assistant for the house, holds our photos and paperwork, hosts the code for my projects, and serves the analytics behind this page. Right now it's running a little over seventy containers.
 
-This post is being written. Check back soon, or see what else is on the [homepage](/).
+This is the overview post: what the box is, what runs on it, the few rules that keep it manageable, and the failures that taught me the most. The other homelab posts go deeper into single pieces, and I link to them along the way.
+
+## The box {#hardware}
+
+Nothing exotic, and that's deliberate. One machine is one thing to power, cool, update and understand.
+
+| Part | What it is |
+|---|---|
+| CPU | Intel Core i5-13500: 14 cores, 20 threads |
+| Memory | 64 GB |
+| System drive | 1 TB for the operating system, Docker and the app databases |
+| Storage | a ZFS pool of about 11 TB for photos, media and documents |
+| Software | Ubuntu 22.04 LTS, Docker, and Docker Compose for everything |
+
+It's more than enough. Over the last month the CPU averaged about 12%, with occasional peaks around 50%. Memory use sits around 25 GB. The box is sized for headroom, not for load.
+
+## The rules {#rules}
+
+Seventy containers would be chaos without a few habits. These are the ones that matter:
+
+1. **One folder per service.** Each service has its own folder with a `docker-compose.yml`, its config, and an `.env` file for secrets. To find out how something runs, I open its folder.
+2. **Secrets live in `.env`, never in the compose file.** The compose files can be read, shared and quoted in posts like this one. The `.env` files never leave the server.
+3. **One front door.** Every web interface is reached through a single reverse proxy, from home and from outside, and nothing is exposed on the router. That's the whole of my [post on securing the homelab](/homelab/securing-the-homelab/).
+4. **One network per service.** Each app shares a small network with the proxy and nothing else, and its database sits on an internal network of its own. I'm partway through migrating to this; the security post explains how far along it is.
+5. **Write it down where it lives.** Anything that took more than ten minutes to work out gets a note in the service's folder. The heating notes alone are a long document now.
+
+## What runs {#services}
+
+Grouped by what each service is for. It's not every container: databases, caches and helper containers are left out, and so are a few experiments.
+
+```{=html}
+<div class="stackgrid">
+  <section>
+    <h4>Front door</h4>
+    <ul>
+      <li><b>nginx-proxy-manager</b> <span>reverse proxy, certificates</span></li>
+      <li><b>cloudflared</b> <span>tunnel out to Cloudflare</span></li>
+      <li><b>Authentik</b> <span>single sign-on</span></li>
+    </ul>
+  </section>
+  <section>
+    <h4>House &amp; energy</h4>
+    <ul>
+      <li><b>Home Assistant</b> <span>the hub for everything</span></li>
+      <li><b>Zigbee2MQTT</b>, <b>Mosquitto</b> <span>sensors and switches</span></li>
+      <li><b>Frigate</b> <span>camera recording and detection</span></li>
+      <li><b>evcc</b> <span>EV charging</span></li>
+      <li><b>Piper</b> <span>local text-to-speech</span></li>
+    </ul>
+  </section>
+  <section>
+    <h4>Photos, media, files</h4>
+    <ul>
+      <li><b>Immich</b> <span>photo library</span></li>
+      <li><b>Jellyfin</b> <span>media server</span></li>
+      <li><b>Pingvin Share</b> <span>sending large files</span></li>
+    </ul>
+  </section>
+  <section>
+    <h4>Paperwork &amp; money</h4>
+    <ul>
+      <li><b>Paperless-ngx</b> <span>scanned document archive</span></li>
+      <li><b>Actual Budget</b> <span>household budget</span></li>
+      <li><b>Dagster</b> + <b>Metabase</b> <span>a small budget data warehouse</span></li>
+      <li><b>Linkwarden</b> <span>bookmarks, archived</span></li>
+    </ul>
+  </section>
+  <section>
+    <h4>Projects &amp; data</h4>
+    <ul>
+      <li><b>OpenProject</b> <span>planning, e.g. the solar install</span></li>
+      <li><b>NocoDB</b> <span>spreadsheets with a database behind them</span></li>
+      <li><b>n8n</b> <span>automations between services</span></li>
+      <li><b>Jupyter</b> <span>notebooks</span></li>
+      <li><b>TimeTagger</b> <span>time tracking</span></li>
+    </ul>
+  </section>
+  <section>
+    <h4>Building things</h4>
+    <ul>
+      <li><b>GitLab</b> <span>my private code</span></li>
+      <li><b>Coder</b>, <b>code-server</b> <span>development workspaces</span></li>
+      <li><b>my own apps</b> <span>development versions</span></li>
+    </ul>
+  </section>
+  <section>
+    <h4>Running the box</h4>
+    <ul>
+      <li><b>Dockhand</b> <span>container management and updates</span></li>
+      <li><b>Beszel</b> <span>monitoring and alerts</span></li>
+      <li><b>Plausible</b> <span>analytics for this site</span></li>
+    </ul>
+  </section>
+</div>
+```
+
+A few of these have, or will get, posts of their own:
+
+- **Home Assistant** runs the heating. [Tuning the underfloor heating](/homelab/underfloor-heating-home-assistant/) is a good example of what it's for: collecting data from the house and acting on it.
+- **evcc and OpenProject** are both part of a solar project that's under way. The [solar and EV simulator](/apps/solar-ev-simulator/) on the Apps page grew out of the planning.
+- **Plausible** has its own post: [self-hosting Plausible](/homelab/self-hosting-plausible/), including the six months it recorded nothing.
+
+## How it's wired {#wiring}
+
+The short version of the [security post](/homelab/securing-the-homelab/):
+
+- **No open ports.** A container called `cloudflared` opens a tunnel *out* to Cloudflare, and requests from the internet come back down it. The router forwards nothing.
+- **Logins happen before the tunnel.** Cloudflare Access puts a login in front of every app by default. The few exceptions are apps with their own phone or TV clients, which rely on their own login.
+- **At home, the same names resolve locally.** My DNS server points the same hostnames straight at the box, so traffic on the home network never leaves the house.
+
+Plausible is the one service strangers *need* to reach, so its tracking script and event endpoint are public, while its dashboard stays behind the login.
+
+## Keeping it running {#operations}
+
+**Updates.** Dockhand checks for new images every night and recreates containers that have one. That keeps most of the stack current without me thinking about it. The price is that an update can land in the middle of the night with nobody watching, which is exactly how the first failure below happened.
+
+**Monitoring.** Beszel collects CPU, memory, disk, temperatures and per-container stats from a small agent on the host, keeps a history, and can send an alert when something crosses a threshold. It's light enough that I don't notice it running.
+
+**Writing it down.** For anything that isn't obvious, the note in the service's folder records what I changed, why, and what to check next time. The heating notes even mark each fact as measured, read from a device, or just inferred, because six months later I won't remember which was which.
+
+## What broke {#what-broke}
+
+The failures are where I learned the most, so here are four.
+
+### The nightly update that broke my workspaces {#nightly-update}
+
+My development workspaces are managed by Coder, which creates their containers with Terraform and remembers which containers it made. One night, Dockhand's automatic update found newer images for those workspaces and recreated the containers itself. Coder's records still pointed at the old, now-deleted containers, so every attempt to start a workspace failed with a name conflict.
+
+The fix was to remove the containers Dockhand had made and let Coder create its own again. The lasting fix was a label on every Coder workspace container that tells Dockhand to leave it alone. **The rule I took from it: a container that something else manages should only ever be updated by that thing.** Two tools both "helping" is worse than one.
+
+### The reboot that left Docker half-alive {#stale-pid}
+
+The workspaces run their own Docker daemon inside the container. After the host rebooted, they came back with Docker refusing to start. The cause was a stale PID file: the previous daemon's process ID was still on disk, so the new one thought another copy was already running. That happened twice before I fixed it properly. The workspace's startup script now deletes stale PID files before starting Docker.
+
+### The DNS outage that killed my remote sessions {#dns}
+
+One night, DNS failed for about half an hour. Everything that needed a name lookup to keep a long-lived connection open gave up, including the sessions I use to reach my development environments remotely. Services came back once DNS did. Those sessions didn't, because nothing was watching them.
+
+Now a small watchdog script runs every five minutes from the host's cron, checks the session is alive, and restarts it if not. It's a few lines, and I should have written it from the start.
+
+### The analytics that stopped counting {#silent-analytics}
+
+The quietest failure of all: Plausible stopped recording visits for six months, and nothing told me. The dashboard loaded fine and showed a flat line, and a flat line looks believable for a small website. The full story is in the [Plausible post](/homelab/self-hosting-plausible/#what-broke).
+
+All four have the same lesson underneath: **things will fail, so the important question is how fast you find out.** Every fix above ended up being a check, a label or a watchdog more than a repair.
+
+## What's next {#whats-next}
+
+- **Finish the network migration**, so every app sits on its own network.
+- **Pin image versions** for the services where a surprise update would hurt, and update those on purpose.
+- **A separate network for smart-home devices**, so a compromised gadget can't reach the box directly.
+- **Check that the checks work.** After the analytics silence, the next step is monitoring that confirms things are *doing* their job, not just that they're running.
+- **More posts.** Certificates and Cloudflare Access are [next](/homelab/tls-and-cloudflare-access/), and backups deserve one of their own.
+
+If you run something similar and want to compare notes, or you'd like help setting up something like this at home, write to me: [contact@jeffreypost.dev](mailto:contact@jeffreypost.dev).
