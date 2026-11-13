@@ -20,5 +20,7 @@ listing:
 
 An individual-level model of HIV transmission in a population aged 15 to 49, then a much faster version of it.
 
+These models led into my master's thesis, which looks at HIV across 29 Sub-Saharan African countries: [Revisiting my master's thesis](../hiv-ssa-thesis/).
+
 ::: {#parts}
 :::

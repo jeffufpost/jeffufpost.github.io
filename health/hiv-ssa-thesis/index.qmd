@@ -1,0 +1,148 @@
+---
+title: "Revisiting my master's thesis: sociobehavioural change and HIV in Sub-Saharan Africa"
+description: "Eighteen years of national surveys from 29 countries, reduced to a two-dimensional map. I re-ran the 2021 analysis and redrew every figure so you can explore it."
+date: 2026-11-13
+image: ../images/covers/hiv-ssa-thesis.svg
+resources:
+  - thesis.pdf
+include-in-header:
+  - text: |
+      <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+---
+
+In 2021 I wrote my master's thesis in Global Health at the University of Geneva. It asks why HIV epidemics across Sub-Saharan Africa reached such different levels, and whether the way societies differ (religion, gender norms, literacy, attitudes to HIV, access to testing and treatment) can explain it.
+
+Five years on, I went back to it. I re-ran the original analysis from the original code and data, then redrew every figure so you can hover over a country, step through the years and switch between views. The figures in the thesis were static and hard to read, and they deserved better.
+
+::: {.callout-note appearance="simple"}
+**MSc Global Health thesis, University of Geneva, 2021.** Advisor: Aziza Merzouki, PhD. The survey data covers 2000 to 2018, and the HIV estimates run to 2019.
+[Download the full thesis (PDF, 62 pages)](thesis.pdf){.btn-ghost}
+:::
+
+## The question
+
+HIV prevalence among adults ranges from under 1% in parts of the Sahel to over 20% in parts of Southern Africa. The continent is also hugely diverse socially: in religion, in how marriage and decision-making work within households, in how people talk about sex and about HIV.
+
+The thesis asks two things:
+
+1. Do countries group together on their social and behavioural characteristics, and how have those groups changed since 2000?
+2. Do those groups line up with how severe each country's epidemic became, and how fast it moved?
+
+## Data
+
+The core data comes from the [Demographic and Health Surveys](https://dhsprogram.com) (DHS), large household surveys run in most low- and middle-income countries every few years. I used the published national-level indicators for 29 Sub-Saharan countries: 80 surveys between 2000 and 2018, and 46 indicators per survey. They cover religion, literacy, work, marriage, attitudes to domestic violence, sexual behaviour, knowledge about AIDS, attitudes to people living with HIV (PLWHA), HIV testing and male circumcision. Treatment (ART) coverage comes from UNAIDS and the World Bank.
+
+Surveys don't ask every question every time, so some values were missing. Appendix A of the thesis covers how they were filled in: country-specific interpolation where a country had enough surveys, and multiple imputation otherwise.
+
+HIV incidence and prevalence (adults aged 15 to 49, 1990 to 2019) come from UNAIDS estimates.
+
+## Method
+
+**A map of 46 indicators in two dimensions.** Forty-six numbers per survey are impossible to look at, so I used principal component analysis (PCA), fitted on the most recent surveys, to find the directions along which countries differ most. The first two components explain **61% and 12.5%** of the variation, and eight components explain over 95%. Figure 1 shows what each direction means: religion and male circumcision pull countries apart along the first axis, and attitudes to wife beating and rurality along the second.
+
+**Five-year windows.** Surveys happen in different years in different countries, so I grouped them into sliding five-year windows (2000–04, 2001–05, … 2014–18). Each window is projected onto the same map, which turns the map into a film.
+
+**Clusters that stay comparable over time.** I grouped countries with k-means and hierarchical clustering. Each window's k-means starts from the previous window's cluster centres, so "cluster 1" means the same thing in 2002 and in 2016. Each country's final cluster is the one it falls into most often across methods and windows.
+
+```python
+pca = PCA(n_components=0.95).fit(windows[2016])        # 8 components keep 95% of the variance
+coords = {gy: pca.transform(w) for gy, w in windows.items()}
+
+km = KMeans(n_clusters=3, n_init=10, random_state=0).fit(coords[2004][:, :2])
+for gy in windows:                                      # seed each window with the last one's centres
+    km = KMeans(n_clusters=3, init=km.cluster_centers_, n_init=1).fit(coords[gy][:, :2])
+```
+
+**How fast each epidemic moved.** Incidence alone mixes two things: how many people are infected, and how easily the virus spreads between them. The effective contact rate β separates them. It is the number of new infections per infected person, adjusted for the share of people who can still be infected. I computed it for every country and year from 1990 to 2019, then clustered the 29 time series.
+
+```python
+beta = (incidence / 1000) / (prev * (1 - prev))         # prev as a fraction
+X = TimeSeriesScalerMeanVariance().fit_transform(to_time_series_dataset(series))
+best = min((TimeSeriesKMeans(n_clusters=2, metric="dtw", random_state=s).fit(X) for s in range(10)),
+           key=lambda km: km.inertia_)
+```
+
+The scaling step matters. Every country's β ends up low by 2019, so without scaling, the clustering just sorts countries by their 1990 value. Scaling makes it compare the *shape* of each curve: when it started falling, and how quickly.
+
+## What the map shows
+
+### Which indicators shape the map
+
+```{=html}
+{{< include figures/fig1_loadings.html >}}
+```
+
+Figure 1. Each dot is one of the 46 indicators, placed by how strongly it pulls countries along each axis. The labelled arrows are the five strongest; hover over any dot for its name and share. Male circumcision, religion (Muslim and Christian) and attitudes to wife beating carry the most weight, followed by HIV testing, attitudes to people living with HIV, rurality and women's participation in household decisions.
+
+### Three groups of countries
+
+```{=html}
+{{< include figures/fig2_trajectories.html >}}
+```
+
+Figure 2. Each dot is a country in one five-year window. Press play or drag the slider; the dotted lines trace each cluster's centre since 2000–04. Hover for the country and survey year.
+
+Three groups stand out, and they are strikingly geographic:
+
+- **Southern & Eastern Africa** (Burundi, Kenya, Lesotho, Malawi, Namibia, Rwanda, Uganda, Zambia, Zimbabwe): more accepting attitudes to people living with HIV, more knowledge about AIDS, higher literacy, more testing and treatment, and much lower male circumcision.
+- **The Sahel** (Burkina Faso, Chad, Gambia, Mali, Niger, Senegal, Sierra Leone): largely Muslim populations, fewer sexual partners on average, and fewer women taking part in household decisions.
+- **Western & Central Africa** (Angola, Benin, Cameroon, Congo, DR Congo, Côte d'Ivoire, Ethiopia, Gabon, Ghana, Liberia, Mozambique, Nigeria, Togo): in between on most indicators, with high male circumcision and more women who work and who reject domestic violence.
+
+The shape holds from 2000 to 2018, but all three groups drift left along the first axis, the Southern & Eastern group most of all. The groups also drift *apart*: heterogeneity across the continent grew rather than shrank.
+
+### What moved them
+
+```{=html}
+{{< include figures/fig3_cascade.html >}}
+```
+
+Figure 3. Median across each cluster's surveys, by period. Use the menu to switch indicators.
+
+The leftward drift is mostly the HIV response itself. In Southern & Eastern Africa, the share of women who had ever been tested for HIV went from **12% to 83%**. In the other two groups it went from **4% and 7% to 44%**. ART coverage went from essentially zero to between 46% and 60%, and acceptance of people living with HIV rose everywhere. In the Sahel, a fall in the share of women who work partly offset the shift.
+
+## What the epidemics did
+
+```{=html}
+{{< include figures/fig4_epidemics.html >}}
+```
+
+Figure 4. Averages across countries in each cluster, 1990 to 2019. Use the menu to switch between incidence and the effective contact rate β, grouped by sociobehavioural cluster or by β cluster.
+
+Countries in the same sociobehavioural group had similar HIV incidence, and the groups differed sharply. Southern & Eastern Africa averaged around 17 new infections per 1,000 adults in 1990; the Sahel, under 2. That gap was already there in 1990. **I found no link between how much a country's indicators changed after 2000 and how much its incidence fell.**
+
+The effective contact rate tells a different story. It fell steeply everywhere, and **almost identically across the three sociobehavioural groups**: from about 0.27–0.29 in 1990 to 0.04–0.05 in 2019. Southern & Eastern Africa started slightly higher and ended slightly lower.
+
+Clustering the β curves themselves gives two groups that don't follow the sociobehavioural ones:
+
+- **Early decline** (18 countries): β was already falling in 1990 and levelled off around 2000, going from 0.27 to 0.09 to 0.04.
+- **Late decline** (11 countries): β only started falling around 1995 and reached its low plateau between 2005 and 2010, going from 0.30 to 0.15 to 0.06.
+
+```{=html}
+{{< include figures/fig5_maps.html >}}
+```
+
+Figure 5. Switch between the four maps with the menu. Grey countries were not part of the study.
+
+Put the maps side by side and a pattern appears. **The sociobehavioural clusters line up with how high each epidemic peaked. The β clusters line up with when it peaked**: a median peak year of 1991–92 for the early-decline group, against 1996 for the late one.
+
+## What it means, and what it can't say
+
+The thesis concludes that the conditions an epidemic starts in, likely shaped by these sociobehavioural factors, matter a lot for how large it eventually becomes. The later social changes measured here don't explain the decline that followed. Grouping countries this way could help target interventions in the push towards epidemic control: countries in the same cluster face similar conditions.
+
+Some honest limits:
+
+- **These are national averages.** Within-country differences (urban and rural, regions, key populations) are where most HIV programmes actually work, and they are invisible here.
+- **Imputation.** Some indicators were filled in for some surveys. The thesis appendix shows which ones and how.
+- **Association, not causation.** The analysis shows which countries look alike and which epidemics behaved alike. It doesn't show why.
+- **The β clustering is fragile.** Re-running it this year showed two almost equally good ways to split the countries; they differ in fit by less than 0.1%. I kept the better of ten runs, which matches the thesis, but the boundary between "early" and "late" should be read loosely.
+- **It's 2021 work.** The data ends in 2018–2019.
+
+## About this re-run
+
+The figures here come from re-running the original analysis code on the original data with today's versions of the libraries, then redrawing the charts. Most results match the thesis exactly. A few numbers moved by a point or two, and the text above quotes the re-run, so it may differ slightly from the PDF. Two changes were needed: newer scikit-learn orients the principal components differently, and the 2021 UNAIDS export had no incidence figures for Mali, so those came from an earlier UNAIDS release.
+
+The full code isn't public yet. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Thesis%20code%20request) and I'll share it.
+
+## Related
+
+The thesis grew out of an interest in how HIV spreads through a population. Before it, I wrote [a stochastic model of HIV transmission](../stochastic-hiv-model/), simulating individuals rather than averages, and then [made it much faster](../2021-09-23-stochastic-HIV-model-fast/2021-09-23-stochastic-HIV-model-fast.html).

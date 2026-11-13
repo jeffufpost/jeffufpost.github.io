@@ -142,6 +142,25 @@ check_security_post() {
   assert_no_grep '(PASSWORD|SECRET)[A-Z_]*[=:][ "'"'"']*[A-Za-z0-9]{6,}' $f
 }
 
+check_thesis_post() {
+  local d=_site/health/hiv-ssa-thesis f=_site/health/hiv-ssa-thesis/index.html
+  assert_file $f
+  assert_file $d/thesis.pdf
+  [ -f $f ] || return
+  assert_no_grep 'name="robots" content="noindex"' $f
+  [ "$(grep -o 'class="plotly-graph-div' $f | wc -l)" -ge 5 ] || fail "fewer than 5 interactive figures in $f"
+  [ "$(grep -o 'plotly-2\.35\.2\.min\.js' $f | wc -l)" -eq 1 ] || fail "plotly.js must be loaded exactly once (pinned 2.35.2) in $f"
+  assert_no_grep 'plotly\.js v[0-9]' $f
+  assert_grep "Revisiting my master" $f
+  assert_grep 'href="thesis\.pdf"' $f
+  assert_grep 'subject=Thesis%20code%20request' $f
+  assert_grep 'stochastic-hiv-model' $f
+  assert_grep 'hiv-ssa-thesis' _site/health/stochastic-hiv-model/index.html
+  assert_no_grep '342-576|/mount/|/home/' $d
+  # not featured: the homelab security post keeps the slot
+  assert_grep '<article class="feat" data-slug="securing-the-homelab">' _site/index.html
+}
+
 check_under_construction() {
   assert_grep '<p class="notice">' _site/index.html
   assert_grep 'under construction' _site/index.html
@@ -254,9 +273,9 @@ check_series() {
 
 check_health_row() {
   local got; got=$(row_html _site/index.html health | slugs | tr '\n' ' ')
-  [ "$got" = "stochastic-hiv-model epidemic-modelling health-data-app " ] || fail "health row is '$got'"
+  [ "$got" = "hiv-ssa-thesis stochastic-hiv-model health-data-app " ] || fail "health row is '$got'"
   got=$(slugs < _site/health/index.html | tr '\n' ' ')
-  for s in stochastic-hiv-model epidemic-modelling 2020-04-15-web-scraping 2020-04-12-on-testing 2020-03-12-COVID-19-Tracker health-data-app; do
+  for s in hiv-ssa-thesis stochastic-hiv-model epidemic-modelling 2020-04-15-web-scraping 2020-04-12-on-testing 2020-03-12-COVID-19-Tracker health-data-app; do
     grep -qw -- "$s" <<<"$got" || fail "health index lacks $s"
   done
   grep -qw 2020-03-15-compartmentalization <<<"$got" && fail "series part listed on health index"
@@ -298,7 +317,7 @@ check_gitignore_keeps_posts() {
 
 check_series_card_meta() {
   local c
-  c=$(card_html _site/index.html epidemic-modelling)
+  c=$(card_html _site/health/index.html epidemic-modelling)  # off the homepage row since the thesis post
   grep -q 'min</span>' <<<"$c" && fail "series card shows a reading time"
   grep -q '<span>8 parts · 2020</span>' <<<"$c" || fail "series card does not say '8 parts · 2020'"
   c=$(card_html _site/index.html stochastic-hiv-model)
