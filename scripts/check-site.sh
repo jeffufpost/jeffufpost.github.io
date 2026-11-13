@@ -229,6 +229,23 @@ check_health_row() {
   grep -qw 2020-03-15-compartmentalization <<<"$got" && fail "series part listed on health index"
 }
 
+check_workflow() {
+  local w=.github/workflows/publish.yml ver
+  assert_file $w
+  ver=$(grep -oE 'version [0-9]+\.[0-9]+\.[0-9]+' README.md | head -1 | cut -d' ' -f2)
+  [ -n "$ver" ] || fail "no Quarto version in README"
+  assert_grep 'quarto-dev/quarto-actions/setup@v2' $w
+  assert_grep "version: *\"?$ver\"?" $w
+  assert_grep 'actions/upload-pages-artifact@v3' $w
+  assert_grep 'actions/deploy-pages@v4' $w
+  assert_grep 'pages: write' $w
+  assert_grep 'id-token: write' $w
+  assert_no_grep 'secrets\.' $w
+  [ "$(cat _site/CNAME 2>/dev/null | head -1)" = "jeffreypost.dev" ] || fail "_site/CNAME is not jeffreypost.dev"
+  assert_file _site/sitemap.xml
+  assert_grep '^Sitemap: https://jeffreypost.dev/sitemap.xml' _site/robots.txt
+}
+
 # ---------------------------------------------------------------- runner
 
 render() {
