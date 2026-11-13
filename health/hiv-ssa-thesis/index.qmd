@@ -45,21 +45,27 @@ HIV incidence and prevalence (adults aged 15 to 49, 1990 to 2019) come from UNAI
 **Clusters that stay comparable over time.** I grouped countries with k-means and hierarchical clustering. Each window's k-means starts from the previous window's cluster centres, so "cluster 1" means the same thing in 2002 and in 2016. Each country's final cluster is the one it falls into most often across methods and windows.
 
 ```python
-pca = PCA(n_components=0.95).fit(windows[2016])        # 8 components keep 95% of the variance
-coords = {gy: pca.transform(w) for gy, w in windows.items()}
+# 8 components keep 95% of the variance
+pca = PCA(n_components=0.95).fit(windows[2016])
+xy = {gy: pca.transform(w)[:, :2] for gy, w in windows.items()}
 
-km = KMeans(n_clusters=3, n_init=10, random_state=0).fit(coords[2004][:, :2])
-for gy in windows:                                      # seed each window with the last one's centres
-    km = KMeans(n_clusters=3, init=km.cluster_centers_, n_init=1).fit(coords[gy][:, :2])
+# seed each window with the previous window's centres
+km = KMeans(3, n_init=10, random_state=0).fit(xy[2004])
+for gy in windows:
+    km = KMeans(3, init=km.cluster_centers_, n_init=1).fit(xy[gy])
 ```
 
 **How fast each epidemic moved.** Incidence alone mixes two things: how many people are infected, and how easily the virus spreads between them. The effective contact rate β separates them. It is the number of new infections per infected person, adjusted for the share of people who can still be infected. I computed it for every country and year from 1990 to 2019, then clustered the 29 time series.
 
 ```python
-beta = (incidence / 1000) / (prev * (1 - prev))         # prev as a fraction
-X = TimeSeriesScalerMeanVariance().fit_transform(to_time_series_dataset(series))
-best = min((TimeSeriesKMeans(n_clusters=2, metric="dtw", random_state=s).fit(X) for s in range(10)),
-           key=lambda km: km.inertia_)
+# prevalence as a fraction
+beta = (incidence / 1000) / (prev * (1 - prev))
+
+# compare curve shapes, not levels
+X = TimeSeriesScalerMeanVariance().fit_transform(series)
+runs = (TimeSeriesKMeans(2, metric="dtw", random_state=s).fit(X)
+        for s in range(10))
+best = min(runs, key=lambda km: km.inertia_)
 ```
 
 The scaling step matters. Every country's β ends up low by 2019, so without scaling, the clustering just sorts countries by their 1990 value. Scaling makes it compare the *shape* of each curve: when it started falling, and how quickly.
@@ -123,7 +129,7 @@ Clustering the β curves themselves gives two groups that don't follow the socio
 
 Figure 5. Switch between the four maps with the menu. Grey countries were not part of the study.
 
-Put the maps side by side and a pattern appears. **The sociobehavioural clusters line up with how high each epidemic peaked. The β clusters line up with when it peaked**: a median peak year of 1991–92 for the early-decline group, against 1996 for the late one.
+Switch between the maps and a pattern appears. **The sociobehavioural clusters line up with how high each epidemic peaked. The β clusters line up with when it peaked**: a median peak year of 1991–92 for the early-decline group, against 1996 for the late one.
 
 ## What it means, and what it can't say
 
