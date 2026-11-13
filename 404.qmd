@@ -1,0 +1,13 @@
+---
+title: "Page not found"
+robots: noindex
+toc: false
+---
+
+That page doesn't exist, or it moved when this site was rebuilt.
+
+Try one of the sections instead:
+
+- [Homelab & home automation](/homelab/)
+- [Apps](/apps/)
+- [Health & epidemiology](/health/)

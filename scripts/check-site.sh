@@ -36,6 +36,46 @@ check_denylist() {
   [ -z "$hits" ] || fail "denylisted text in: $(echo "$hits" | head -5 | tr '\n' ' ')"
 }
 
+PLAUSIBLE_SRC='plausible.jeffreypost.dev/js/script.file-downloads.outbound-links.pageview-props.tagged-events.js'
+
+check_analytics() {
+  local f n=0
+  while IFS= read -r f; do
+    n=$((n+1))
+    grep -qF "$PLAUSIBLE_SRC" "$f" || fail "no Plausible in $f"
+    grep -qF 'G-V0G8PBVM3Y' "$f" || fail "no GA in $f"
+  done < <(find _site -name '*.html' -not -path '*/site_libs/*' -not -path '*/scattered-thoughts/*')
+  [ $n -gt 0 ] || fail "no html pages found"
+  assert_no_grep 'G-M3QJE9ZPZT' _site
+}
+
+check_cv_link() {
+  assert_grep 'class="cv-link plausible-event-name=Request\+CV"' _site/index.html
+  assert_grep 'assets/cv-link\.js' _site/index.html
+  assert_file _site/assets/cv-link.js
+}
+
+check_light_only() {
+  assert_no_grep 'quarto-color-scheme-toggle' _site/index.html
+  assert_no_grep 'quarto-color-scheme-toggle' _site/404.html
+}
+
+check_404() {
+  assert_file _site/404.html
+  assert_grep 'href="/(\./)?homelab/"' _site/404.html
+  assert_grep 'href="/(\./)?apps/"' _site/404.html
+  assert_grep 'href="/(\./)?health/"' _site/404.html
+}
+
+check_fonts_and_theme() {
+  assert_grep 'family=Instrument\+Sans' _site/index.html
+  assert_grep 'IBM\+Plex\+Mono' _site/index.html
+  local css; css=$(ls _site/site_libs/bootstrap/bootstrap*.min.css 2>/dev/null | grep -v icons | head -1)
+  [ -n "$css" ] || { fail "no bootstrap css"; return; }
+  grep -qi 'f8fafc' "$css" || fail "page background #f8fafc not in theme css"
+  grep -qi '16202b' "$css" || fail "text colour #16202b not in theme css"
+}
+
 # ---------------------------------------------------------------- runner
 
 render() {

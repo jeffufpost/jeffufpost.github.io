@@ -3,3 +3,5 @@ title: "Jeffrey Post"
 ---
 
 Site under construction.
+
+<a class="cv-link plausible-event-name=Request+CV" href="mailto:contact@jeffreypost.dev?subject=CV%20request">Request CV</a>
