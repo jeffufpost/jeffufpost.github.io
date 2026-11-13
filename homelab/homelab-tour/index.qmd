@@ -4,8 +4,12 @@ description: "A tour of the stack: reverse proxy, single sign-on, backups, monit
 date: 2026-11-20
 image: thumb.svg
 pillar: homelab
-draft: true
+status: coming-soon
+include-in-header:
+  text: <meta name="robots" content="noindex">
 featured: true
 ---
 
-Draft.
+[Coming soon]{.chip .chip-coming-soon}
+
+This post is being written. Check back soon, or see what else is on the [homepage](/).

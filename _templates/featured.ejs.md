@@ -4,7 +4,8 @@ const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</
 const slugOf = (item) => { const parts = String(item.path || "").replace(/\/index\.(html|qmd|ipynb)$/, "").replace(/\.(html|qmd|ipynb)$/, "").split("/").filter(Boolean); return parts.length ? parts[parts.length - 1] : ""; };
 const labels = { homelab: "Homelab", apps: "Apps", health: "Health" };
 const colours = { homelab: "var(--c-homelab)", apps: "var(--c-apps)", health: "var(--c-health)" };
-const item = items.find((it) => it.featured === true || it.featured === "true");
+const unfinished = (it) => ["planned", "coming-soon", "in-progress"].includes(it.status);
+const item = items.find((it) => (it.featured === true || it.featured === "true") && !unfinished(it));
 let html = "";
 if (item) {
   const art = item.image ? `<div class="art"><img src="${esc(item.image)}" alt="" loading="lazy"></div>` : `<div class="art"></div>`;

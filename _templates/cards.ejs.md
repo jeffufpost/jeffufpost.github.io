@@ -13,17 +13,19 @@ const p = templateParams || {};
 const esc = (s) => String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const slugOf = (item) => { const parts = String(item.path || "").replace(/\/index\.(html|qmd|ipynb)$/, "").replace(/\.(html|qmd|ipynb)$/, "").split("/").filter(Boolean); return parts.length ? parts[parts.length - 1] : ""; };
 const statusOf = (item) => item.status || "published";
-const rank = { published: 0, live: 0, "in-progress": 1, planned: 2 };
+const rank = { published: 0, live: 0, "in-progress": 1, planned: 2, "coming-soon": 2 };
+const unlinked = (st) => st === "planned" || st === "coming-soon";
 
 function selectItems(all) {
   let xs = all.filter((it) => !p.pillar || it.pillar === p.pillar);
   if (p.kind) xs = xs.filter((it) => it.kind === p.kind);
   if (p.series) return xs.filter((it) => it.series === p.series && !it["series-page"]);
   xs = xs.filter((it) => !it.series || it["series-page"]);
-  if (p["exclude-featured"]) xs = xs.filter((it) => !it.featured);
+  // Only a written featured post takes the featured slot, so only that one leaves the row.
+  if (p["exclude-featured"]) xs = xs.filter((it) => !(it.featured && rank[statusOf(it)] === 0));
   const done = xs.filter((it) => rank[statusOf(it)] === 0);
   const wip = xs.filter((it) => statusOf(it) === "in-progress");
-  const planned = xs.filter((it) => statusOf(it) === "planned");
+  const planned = xs.filter((it) => rank[statusOf(it)] === 2);
   const pending = wip.concat(planned);
   let out = done.concat(pending);
   const limit = Number(p.limit || 0);
@@ -37,7 +39,7 @@ function selectItems(all) {
 
 const chosen = selectItems(items);
 const section = p.pillar || p.section || "";
-const chipText = { live: "Live", "in-progress": "In progress", planned: "Planned" };
+const chipText = { live: "Live", "in-progress": "In progress", planned: "Planned", "coming-soon": "Coming soon" };
 
 function meta(item) {
   const bits = [];
@@ -58,7 +60,7 @@ function meta(item) {
 
 function card(item) {
   const st = statusOf(item);
-  const title = st === "planned"
+  const title = unlinked(st)
     ? `<h3>${esc(item.title)}</h3>`
     : `<h3><a class="card-link" href="${esc(item.path)}">${esc(item.title)}</a></h3>`;
   const art = item.image && st !== "planned"

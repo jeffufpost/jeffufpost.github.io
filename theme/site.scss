@@ -99,6 +99,12 @@ a:focus-visible { outline: 2px solid $c-apps; outline-offset: 2px; }
 .chip-live { color: $c-live; }
 .chip-in-progress { color: $c-wip; }
 .chip-planned { color: $c-planned; }
+.chip-coming-soon { color: $c-homelab; }
+.card[data-status="coming-soon"] .art { opacity: 0.55; }
+.hello .notice {
+  font-size: 0.85rem; color: $ink; background: #fbf3e8; border: 1px solid #efdcc3;
+  border-radius: 8px; padding: 0.45rem 0.75rem; justify-self: start; max-width: 100%;
+}
 
 @media (max-width: 820px) {
   .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }

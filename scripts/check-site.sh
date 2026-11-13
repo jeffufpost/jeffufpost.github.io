@@ -82,12 +82,13 @@ card_html() { # file slug
 }
 pillar_order() { grep -oE '<section class="pillar" data-pillar="[a-z]+"' "$1" | sed -E 's/.*data-pillar="([a-z]+)"/\1/' | tr '\n' ' '; }
 
-check_rows_dev() {
-  local f=_site-dev/index.html
-  [ "$(pillar_order $f)" = "homelab apps health " ] || fail "pillar order is '$(pillar_order $f)'"
-  assert_grep '<article class="feat" data-slug="homelab-tour"' $f
-  row_html $f homelab | grep -q 'data-slug="homelab-tour"' && fail "featured post repeated in homelab row"
-  [ "$(row_html $f homelab | slugs | wc -l)" -ge 1 ] || fail "homelab row has no cards"
+check_rows() {
+  local f
+  for f in _site/index.html _site-dev/index.html; do
+    [ "$(pillar_order $f)" = "homelab apps health " ] || fail "pillar order in $f is '$(pillar_order $f)'"
+    # the featured slot only shows a written post; the homelab tour is not written yet
+    assert_no_grep 'class="feat"' $f
+  done
 }
 
 check_apps_order() {
@@ -106,12 +107,23 @@ check_chips() {
   grep -q '<a class="card-link"' <<<"$c" || fail "dvf-map card not linked"
 }
 
-check_drafts_gone() {
-  [ -e _site/homelab/homelab-tour ] && fail "draft homelab-tour rendered in production"
-  assert_no_grep 'self-hosting-plausible' _site
-  assert_no_grep 'homelab-tour' _site
-  assert_no_grep '<section class="pillar" data-pillar="homelab"' _site/index.html
-  assert_no_grep 'class="feat"' _site/index.html
+check_coming_soon() {
+  local f=_site/index.html s c got
+  got=$(row_html $f homelab | slugs | tr '\n' ' ')
+  [ "$got" = "homelab-tour self-hosting-plausible underfloor-heating-home-assistant " ] || fail "homelab row is '$got'"
+  for s in homelab-tour self-hosting-plausible underfloor-heating-home-assistant; do
+    c=$(card_html $f $s)
+    grep -q 'data-status="coming-soon"' <<<"$c" || fail "$s is not coming-soon"
+    grep -q '<span class="chip chip-coming-soon">Coming soon</span>' <<<"$c" || fail "$s has no Coming soon chip"
+    grep -q '<a ' <<<"$c" && fail "coming-soon card $s is linked"
+    assert_grep '<meta name="robots" content="noindex"' _site/homelab/$s/index.html
+    assert_no_grep 'Draft\.' _site/homelab/$s/index.html
+  done
+}
+
+check_under_construction() {
+  assert_grep '<p class="notice">' _site/index.html
+  assert_grep 'under construction' _site/index.html
 }
 
 check_no_empty_rows() {
