@@ -1,0 +1,14 @@
+---
+title: "Certificates and Cloudflare Access in front of the homelab"
+description: "Who gets a login screen and who doesn't, where TLS starts and ends, and why apps with their own clients get their own rules."
+date: 2026-11-27
+image: thumb.svg
+pillar: homelab
+status: coming-soon
+include-in-header:
+  text: <meta name="robots" content="noindex">
+---
+
+[Coming soon]{.chip .chip-coming-soon}
+
+This post is being written. Check back soon, or see what else is on the [homepage](/).

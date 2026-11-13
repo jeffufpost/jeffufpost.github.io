@@ -117,3 +117,16 @@ a:focus-visible { outline: 2px solid $c-apps; outline-offset: 2px; }
 // Posts: readable column
 main.content { max-width: 70ch; }
 .page-columns main.content { max-width: none; }
+
+/* Interactive network diagram in posts */
+.netdiag { margin: 1.5rem 0; }
+.netdiag .scroll { overflow-x: auto; border: 1px solid $line; border-radius: 10px; background: $page; }
+.netdiag svg { display: block; width: 100%; min-width: 680px; height: auto; }
+.netdiag figcaption { color: $muted; font-size: 0.85rem; margin-top: 0.5rem; }
+.netdiag a.netlink { cursor: pointer; }
+.netdiag a.netlink .frame { transition: stroke-width 0.12s ease, filter 0.12s ease; }
+.netdiag a.netlink:hover .frame { stroke-width: 3; filter: drop-shadow(0 2px 6px rgba(106, 63, 192, 0.25)); }
+.netdiag a.netlink:focus { outline: none; }
+.netdiag a.netlink:focus-visible .frame { stroke: $c-apps; stroke-width: 3.5; }
+.netdiag a.netlink .cue { font-size: 13px; fill: $c-homelab; }
+@media (prefers-reduced-motion: reduce) { .netdiag a.netlink .frame { transition: none; } }

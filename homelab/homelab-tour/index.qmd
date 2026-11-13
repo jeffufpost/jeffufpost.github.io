@@ -7,7 +7,6 @@ pillar: homelab
 status: coming-soon
 include-in-header:
   text: <meta name="robots" content="noindex">
-featured: true
 ---
 
 [Coming soon]{.chip .chip-coming-soon}

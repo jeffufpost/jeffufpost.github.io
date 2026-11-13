@@ -1,0 +1,421 @@
+---
+title: "How I let the internet into my homelab without opening a single port"
+description: "Cloudflare Tunnel, nginx-proxy-manager and one Docker network per service: the reasoning, a map of the network, and the compose files behind it."
+date: 2026-11-13
+image: thumb.svg
+pillar: homelab
+featured: true
+toc: true
+---
+
+I run a few dozen services at home: Home Assistant, a photo library, a document archive, a media server, and a lot of smaller tools. I want to reach most of them from my phone wherever I am, and some of them should be reachable by other people too.
+
+The easy way to do that is to forward ports 80 and 443 on the router and put a reverse proxy behind them. That works, but it means my home IP address is public, every bot on the internet can knock on that door, and the only thing between them and my data is whatever login screen each app happens to have.
+
+This post is about the setup I use instead. It covers the reasoning, a map of how traffic flows, and the actual Docker Compose files that make it work, with the secrets taken out.
+
+## What I'm defending against {#threats}
+
+Nothing here is exotic. I'm defending against the things that actually happen to home servers:
+
+- **Scanning.** Any open port on a residential IP gets probed within minutes, mostly by automated tools looking for known vulnerabilities and default passwords.
+- **Exposed admin panels.** Proxy dashboards, database UIs and container managers are built for trusted networks. They should never face the internet.
+- **One bad app becoming every app.** If a single service gets compromised, it shouldn't be able to reach the database of another one.
+- **Apps with weak or no login.** Plenty of self-hosted tools assume a trusted network and have thin authentication, or none at all.
+
+Those turn into four rules:
+
+1. **Nothing inbound.** No ports forwarded on the router. The home IP is never published.
+2. **One front door.** Every request, from the internet or from my own sofa, goes through a single reverse proxy.
+3. **Least exposure per service.** Each app can talk to the proxy and to its own backend, and nothing else.
+4. **A login before the app.** Unless an app has a good reason to be reached directly, you authenticate before your request ever reaches my network.
+
+## The map {#the-network}
+
+Here is how a request reaches a service. The boxes with an ↗ are clickable and jump to the part of this post that explains them.
+
+```{=html}
+<figure class="netdiag">
+<div class="scroll">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1060 700" role="img" aria-labelledby="nd-t nd-d" font-family="Instrument Sans, system-ui, -apple-system, Segoe UI, sans-serif">
+  <title id="nd-t">How traffic reaches the homelab</title>
+  <desc id="nd-d">Remote visitors reach Cloudflare's edge, where Cloudflare Access applies one of three rules: most apps need a login through Authentik or an emailed PIN, the Authentik login page itself is open, and apps with their own clients such as Home Assistant and Jellyfin are open and rely on their own login. Allowed requests travel down a single outbound tunnel opened by the cloudflared container, through a router with no forwarded ports, to nginx-proxy-manager. At home, AdGuard DNS points the same hostnames at the homelab box, so LAN clients reach nginx-proxy-manager directly on ports bound to the LAN address only. nginx-proxy-manager reaches each service over that service's own Docker network, and each service's backend containers sit on a further internal-only network.</desc>
+  <defs>
+    <marker id="nd-ap" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#6a3fc0"/></marker>
+    <marker id="nd-ab" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#2457c5"/></marker>
+    <marker id="nd-ai" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="#5b6672"/></marker>
+  </defs>
+
+  <rect width="1060" height="700" fill="#f8fafc"/>
+
+  <text x="24" y="30" font-size="12" font-weight="700" fill="#5b6672" letter-spacing="1.5">INTERNET</text>
+
+  <rect x="24" y="92" width="170" height="60" rx="8" fill="#fff" stroke="#dde3ea" stroke-width="1.5"/>
+  <text x="109" y="118" font-size="15" font-weight="700" fill="#16202b" text-anchor="middle">Visitor</text>
+  <text x="109" y="137" font-size="12.5" fill="#5b6672" text-anchor="middle">anywhere, any device</text>
+  <line x1="194" y1="122" x2="246" y2="122" stroke="#6a3fc0" stroke-width="2.5" marker-end="url(#nd-ap)"/>
+  <text x="220" y="114" font-size="12" fill="#6a3fc0" text-anchor="middle">https</text>
+
+  <a class="netlink" href="#cloudflare-access" aria-label="Cloudflare edge and Access rules: read more">
+    <rect class="frame" x="250" y="40" width="420" height="168" rx="10" fill="#f1ecfb" stroke="#6a3fc0" stroke-width="1.5"/>
+    <text x="270" y="66" font-size="15" font-weight="700" fill="#16202b">Cloudflare edge</text>
+    <text x="634" y="66" font-size="12.5" fill="#5b6672" text-anchor="end">TLS · DDoS filtering · home IP hidden</text>
+    <text class="cue" x="646" y="66">↗</text>
+    <text x="270" y="92" font-size="11" font-weight="700" fill="#6a3fc0" letter-spacing="1.2">ACCESS RULES</text>
+    <g font-size="12.5">
+      <rect x="266" y="102" width="388" height="28" rx="6" fill="#fff"/>
+      <text x="278" y="121" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="12" fill="#16202b">*.example.com</text>
+      <text x="420" y="121" fill="#6a3fc0" font-weight="700">login: Authentik or email PIN</text>
+      <rect x="266" y="136" width="388" height="28" rx="6" fill="#fff"/>
+      <text x="278" y="155" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="12" fill="#16202b">auth.example.com</text>
+      <text x="420" y="155" fill="#16202b">open: it is the login page</text>
+      <rect x="266" y="170" width="388" height="28" rx="6" fill="#fff"/>
+      <text x="278" y="189" fill="#16202b">Home Assistant, Jellyfin</text>
+      <text x="420" y="189" fill="#16202b">open: the app's own login</text>
+    </g>
+  </a>
+
+  <g font-size="12.5" fill="#16202b">
+    <line x1="700" y1="96" x2="732" y2="96" stroke="#6a3fc0" stroke-width="2.5"/>
+    <text x="740" y="100">From the internet (tunnel)</text>
+    <line x1="700" y1="122" x2="732" y2="122" stroke="#2457c5" stroke-width="2.5"/>
+    <text x="740" y="126">From home (LAN only)</text>
+    <line x1="700" y1="148" x2="732" y2="148" stroke="#5b6672" stroke-width="2"/>
+    <text x="740" y="152">Shared by both paths</text>
+  </g>
+
+  <rect x="12" y="244" width="1036" height="444" rx="14" fill="none" stroke="#5b6672" stroke-width="1.5" stroke-dasharray="6 5"/>
+  <text x="28" y="272" font-size="12" font-weight="700" fill="#5b6672" letter-spacing="1.5">HOME LAN</text>
+
+  <line x1="460" y1="324" x2="460" y2="212" stroke="#6a3fc0" stroke-width="7" stroke-opacity=".18"/>
+  <line x1="460" y1="324" x2="460" y2="212" stroke="#6a3fc0" stroke-width="2.5" stroke-dasharray="8 5" marker-end="url(#nd-ap)"/>
+  <text x="538" y="266" font-size="12" fill="#6a3fc0">one outbound tunnel:</text>
+  <text x="538" y="281" font-size="12" fill="#6a3fc0">cloudflared dials out</text>
+
+  <rect x="395" y="222" width="130" height="44" rx="8" fill="#fff" stroke="#16202b" stroke-width="1.5"/>
+  <text x="460" y="243" font-size="14" font-weight="700" fill="#16202b" text-anchor="middle">Router</text>
+  <text x="460" y="258" font-size="11.5" fill="#5b6672" text-anchor="middle">NAT, outbound only</text>
+  <a class="netlink" href="#ports" aria-label="No ports forwarded: read more about ports">
+    <rect class="frame" x="240" y="228" width="146" height="32" rx="16" fill="#fff" stroke="#1c7a52" stroke-width="1.5"/>
+    <text x="306" y="249" font-size="12.5" font-weight="700" fill="#1c7a52" text-anchor="middle">0 ports forwarded</text>
+    <text class="cue" x="370" y="249">↗</text>
+  </a>
+
+  <rect x="36" y="410" width="176" height="60" rx="8" fill="#fff" stroke="#dde3ea" stroke-width="1.5"/>
+  <text x="124" y="436" font-size="15" font-weight="700" fill="#16202b" text-anchor="middle">Laptop / phone</text>
+  <text x="124" y="455" font-size="12.5" fill="#5b6672" text-anchor="middle">at home</text>
+
+  <a class="netlink" href="#at-home" aria-label="AdGuard DNS: read more about the home path">
+    <rect class="frame" x="36" y="566" width="176" height="64" rx="8" fill="#e9f0fd" stroke="#2457c5" stroke-width="1.5"/>
+    <text x="124" y="591" font-size="15" font-weight="700" fill="#16202b" text-anchor="middle">AdGuard DNS</text>
+    <text class="cue" x="194" y="584">↗</text>
+    <text x="124" y="612" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11.5" fill="#2457c5" text-anchor="middle">*.example.com → box</text>
+  </a>
+  <line x1="124" y1="470" x2="124" y2="562" stroke="#2457c5" stroke-width="2" stroke-dasharray="4 4" marker-end="url(#nd-ab)" marker-start="url(#nd-ab)"/>
+  <text x="134" y="520" font-size="12" fill="#2457c5">DNS lookup</text>
+
+  <rect x="252" y="290" width="780" height="386" rx="12" fill="#fff" stroke="#16202b" stroke-width="1.5"/>
+  <text x="268" y="314" font-size="12" font-weight="700" fill="#5b6672" letter-spacing="1.5">HOMELAB BOX · DOCKER</text>
+
+  <a class="netlink" href="#cloudflared" aria-label="cloudflared: read more">
+    <rect class="frame" x="385" y="328" width="150" height="48" rx="8" fill="#f1ecfb" stroke="#6a3fc0" stroke-width="1.5"/>
+    <text x="460" y="357" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="14" font-weight="600" fill="#16202b" text-anchor="middle">cloudflared</text>
+    <text class="cue" x="518" y="344">↗</text>
+  </a>
+
+  <line x1="460" y1="376" x2="460" y2="428" stroke="#6a3fc0" stroke-width="2.5" marker-end="url(#nd-ap)"/>
+  <text x="470" y="406" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11.5" fill="#6a3fc0">npm-proxy</text>
+
+  <a class="netlink" href="#nginx-proxy-manager" aria-label="nginx-proxy-manager: read more">
+    <rect class="frame" x="358" y="432" width="204" height="104" rx="10" fill="#fff" stroke="#16202b" stroke-width="2"/>
+    <text x="460" y="458" font-size="15" font-weight="700" fill="#16202b" text-anchor="middle">nginx-proxy-manager</text>
+    <text class="cue" x="545" y="448">↗</text>
+    <text x="460" y="477" font-size="12.5" fill="#5b6672" text-anchor="middle">one front door: routing,</text>
+    <text x="460" y="493" font-size="12.5" fill="#5b6672" text-anchor="middle">TLS cert, access rules</text>
+    <rect x="378" y="504" width="164" height="22" rx="11" fill="#e9f0fd"/>
+    <text x="460" y="519" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" fill="#2457c5" text-anchor="middle">:443 :80 :81 → LAN IP</text>
+  </a>
+
+  <path d="M212 432 H 322 Q 332 432 332 442 V 462 Q 332 470 340 470 H 354" fill="none" stroke="#2457c5" stroke-width="2.5" marker-end="url(#nd-ab)"/>
+  <text x="260" y="425" font-size="12" fill="#2457c5">https :443</text>
+  <path d="M212 456 H 302 Q 312 456 312 466 V 508 Q 312 516 320 516 H 374" fill="none" stroke="#2457c5" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#nd-ab)"/>
+  <text x="260" y="450" font-size="12" fill="#2457c5">admin :81</text>
+
+  <line x1="460" y1="536" x2="460" y2="586" stroke="#5b6672" stroke-width="2" marker-end="url(#nd-ai)"/>
+  <text x="470" y="565" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11.5" fill="#5b6672">npm-internal</text>
+  <rect x="385" y="590" width="150" height="44" rx="8" fill="#f8fafc" stroke="#dde3ea" stroke-width="1.5"/>
+  <text x="460" y="617" font-size="13.5" fill="#16202b" text-anchor="middle">Postgres (NPM config)</text>
+
+  <a class="netlink" href="#one-network-per-service" aria-label="One network per service: read more">
+    <rect class="frame" x="736" y="300" width="290" height="368" rx="10" fill="#fff" fill-opacity="0" stroke="#dde3ea" stroke-width="1" stroke-dasharray="3 4"/>
+    <text class="cue" x="1008" y="316">↗</text>
+    <text x="986" y="316" font-size="10.5" font-weight="700" fill="#5b6672" letter-spacing="1.2" text-anchor="end">BACKEND</text>
+
+    <rect x="748" y="318" width="168" height="52" rx="8" fill="#f8fafc" stroke="#dde3ea" stroke-width="1.5"/>
+    <text x="832" y="340" font-size="14" font-weight="600" fill="#16202b" text-anchor="middle">Home Assistant</text>
+    <text x="832" y="358" font-size="11.5" fill="#5b6672" text-anchor="middle">own login</text>
+
+    <rect x="748" y="382" width="168" height="52" rx="8" fill="#f8fafc" stroke="#dde3ea" stroke-width="1.5"/>
+    <text x="832" y="404" font-size="14" font-weight="600" fill="#16202b" text-anchor="middle">Jellyfin</text>
+    <text x="832" y="422" font-size="11.5" fill="#5b6672" text-anchor="middle">own login</text>
+
+    <rect x="748" y="446" width="168" height="52" rx="8" fill="#f8fafc" stroke="#dde3ea" stroke-width="1.5"/>
+    <text x="832" y="468" font-size="14" font-weight="600" fill="#16202b" text-anchor="middle">Authentik</text>
+    <text x="832" y="486" font-size="11.5" fill="#5b6672" text-anchor="middle">the login page</text>
+
+    <rect x="748" y="510" width="168" height="52" rx="8" fill="#f8fafc" stroke="#6a3fc0" stroke-width="1.5"/>
+    <text x="832" y="532" font-size="14" font-weight="600" fill="#16202b" text-anchor="middle">Photos</text>
+    <text x="832" y="550" font-size="11.5" font-weight="700" fill="#6a3fc0" text-anchor="middle">behind Access login</text>
+
+    <rect x="748" y="574" width="168" height="52" rx="8" fill="#f8fafc" stroke="#6a3fc0" stroke-width="1.5"/>
+    <text x="832" y="596" font-size="14" font-weight="600" fill="#16202b" text-anchor="middle">Documents, …</text>
+    <text x="832" y="614" font-size="11.5" font-weight="700" fill="#6a3fc0" text-anchor="middle">behind Access login</text>
+
+    <g fill="#f8fafc" stroke="#5b6672" stroke-width="1.2" stroke-dasharray="3 3">
+      <rect x="944" y="326" width="76" height="36" rx="6"/>
+      <rect x="944" y="454" width="76" height="36" rx="6"/>
+      <rect x="944" y="518" width="76" height="36" rx="6"/>
+      <rect x="944" y="582" width="76" height="36" rx="6"/>
+    </g>
+    <g font-size="11.5" fill="#16202b" text-anchor="middle">
+      <text x="982" y="348">helpers</text>
+      <text x="982" y="476">db, redis</text>
+      <text x="982" y="540">db, redis, ML</text>
+      <text x="982" y="604">db, redis, …</text>
+    </g>
+    <g stroke="#5b6672" stroke-width="1.5" stroke-dasharray="3 3">
+      <line x1="916" y1="344" x2="944" y2="344"/>
+      <line x1="916" y1="472" x2="944" y2="472"/>
+      <line x1="916" y1="536" x2="944" y2="536"/>
+      <line x1="916" y1="600" x2="944" y2="600"/>
+    </g>
+    <text x="832" y="648" font-size="12" fill="#5b6672" text-anchor="middle">one network per service:</text>
+    <text x="832" y="664" font-size="12" fill="#5b6672" text-anchor="middle">they cannot see each other</text>
+    <text x="982" y="648" font-size="12" fill="#5b6672" text-anchor="middle">internal-only,</text>
+    <text x="982" y="664" font-size="12" fill="#5b6672" text-anchor="middle">no internet</text>
+  </a>
+
+  <g fill="none" stroke="#5b6672" stroke-width="2">
+    <path d="M562 450 C 650 450 660 344 744 344" marker-end="url(#nd-ai)"/>
+    <path d="M562 468 C 650 468 660 408 744 408" marker-end="url(#nd-ai)"/>
+    <path d="M562 484 C 650 484 660 472 744 472" marker-end="url(#nd-ai)"/>
+    <path d="M562 500 C 650 500 660 536 744 536" marker-end="url(#nd-ai)"/>
+    <path d="M562 516 C 650 516 660 600 744 600" marker-end="url(#nd-ai)"/>
+  </g>
+  <g font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11.5" fill="#5b6672" stroke="#fff" stroke-width="4" paint-order="stroke" text-anchor="middle">
+    <text x="653" y="401">npm-hass</text>
+    <text x="653" y="442">npm-media</text>
+    <text x="653" y="482">npm-auth</text>
+    <text x="653" y="522">npm-photos</text>
+    <text x="653" y="562">npm-paperless</text>
+  </g>
+</svg>
+</div>
+<figcaption>Purple: a request from the internet. Blue: the same request from my sofa. Grey: the part both share. Hostnames are placeholders.</figcaption>
+</figure>
+```
+
+There are two ways in, and they meet at the same place.
+
+### From the internet {#from-the-internet}
+
+A visitor's browser connects to **Cloudflare**, not to my house. My domain's DNS points at Cloudflare, so the public internet never learns my home IP. Cloudflare terminates TLS, filters obvious attack traffic, and checks **Cloudflare Access** rules (more on those [below](#cloudflare-access)).
+
+If the request is allowed, Cloudflare sends it down a **tunnel**. The important detail is which way that tunnel was built. A small container at home, `cloudflared`, *dials out* to Cloudflare and keeps that connection open. Requests come back down a connection my side opened, the same way a web page comes back to your browser. The router only sees outbound traffic, so it needs **zero port forwards**.
+
+At the bottom of the tunnel, `cloudflared` hands the request to **nginx-proxy-manager** (NPM), which looks at the hostname and passes it to the right service.
+
+### At home {#at-home}
+
+When I'm on my home Wi-Fi, sending traffic out to Cloudflare and back down the tunnel would be silly. My **AdGuard Home** DNS server has one rewrite rule:
+
+```text
+*.example.com  →  192.168.1.10   (the homelab box)
+```
+
+So at home the same hostnames resolve straight to the box, and my laptop talks to NPM directly on port 443. It's the same proxy, with the same hostnames and the same certificate. Only the route there is shorter.
+
+That has one consequence I'll come back to: **at home, Cloudflare Access isn't in the path**. The LAN is treated as trusted.
+
+## The compose files {#compose}
+
+Everything runs in Docker Compose. Below are the parts that matter for security, trimmed and with secrets replaced by placeholders. Values like `${NPM_DB_PASSWORD}` come from an `.env` file that never leaves the server.
+
+### nginx-proxy-manager {#nginx-proxy-manager}
+
+NPM is nginx with a web UI. Each "proxy host" maps a hostname to a container, and NPM handles the certificate and a few access rules. It stores its config in Postgres, which sits on its own network that nothing else joins.
+
+```yaml
+services:
+  app:
+    image: jc21/nginx-proxy-manager:latest
+    restart: always
+    ports:
+      - "192.168.1.10:443:443"   # HTTPS, LAN only (see "Ports" below)
+      - "192.168.1.10:80:80"     # redirects to HTTPS
+      - "192.168.1.10:81:81"     # admin UI, LAN only
+    environment:
+      DB_POSTGRES_HOST: db
+      DB_POSTGRES_PORT: "5432"
+      DB_POSTGRES_USER: npm
+      DB_POSTGRES_PASSWORD: ${NPM_DB_PASSWORD}
+      DB_POSTGRES_NAME: npm
+      DISABLE_IPV6: "true"
+    volumes:
+      - ./data:/data
+      - ./letsencrypt:/etc/letsencrypt
+    depends_on:
+      - db
+    networks:
+      npm-proxy:
+        ipv4_address: 172.30.0.10   # pinned: Home Assistant trusts this address
+      npm-internal:
+      npm-hass:
+      npm-media:
+      npm-auth:
+      npm-photos:
+      npm-paperless:
+
+  db:
+    image: postgres:17
+    restart: always
+    environment:
+      POSTGRES_USER: npm
+      POSTGRES_PASSWORD: ${NPM_DB_PASSWORD}
+      POSTGRES_DB: npm
+    volumes:
+      - ./postgres:/var/lib/postgresql/data
+    networks:
+      npm-internal:
+```
+
+NPM is the only container that joins every service network. That's what makes it the single front door: nothing else can reach all the apps.
+
+### cloudflared {#cloudflared}
+
+`cloudflared` lives in the same compose file, so it starts and stops with the proxy:
+
+```yaml
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    restart: always
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    networks:
+      npm-proxy:
+        ipv4_address: 172.30.0.11   # pinned, see "What broke"
+```
+
+Three things to notice:
+
+- **No `ports:` at all.** `cloudflared` only makes outbound connections, so it needs nothing published on the host.
+- **The token is the whole configuration.** Which hostnames the tunnel serves, and where it sends them, is set in the Cloudflare dashboard. Locally, the token is the only secret, so it lives in `.env`.
+- **It sits on exactly one network.** `npm-proxy` holds just `cloudflared` and NPM, so the only thing the tunnel can reach is the proxy. If `cloudflared` were ever compromised, it couldn't talk to Home Assistant or a database directly.
+
+The pinned addresses need the network to have a fixed subnet, so the shared networks are created once, by hand, outside any compose file:
+
+```bash
+docker network create --subnet 172.30.0.0/24 npm-proxy
+docker network create --internal npm-internal
+docker network create npm-hass      # ...and one per service
+```
+
+### One network per service {#one-network-per-service}
+
+Each app gets its own small network that it shares only with NPM. Its backend containers (database, cache, workers) sit on a second network marked `internal: true`, which has no route to the internet and no route to NPM. Here is the document archive, Paperless-ngx, as an example:
+
+```yaml
+services:
+  webserver:
+    image: ghcr.io/paperless-ngx/paperless-ngx:latest
+    networks:
+      - npm-paperless        # NPM can reach the web UI...
+      - paperless-internal   # ...and the web UI can reach its backend
+  db:
+    image: mariadb:12
+    networks:
+      - paperless-internal   # nothing else, not even NPM
+  broker:
+    image: redis:8
+    networks:
+      - paperless-internal
+
+networks:
+  npm-paperless:
+    external: true
+  paperless-internal:
+    internal: true           # no internet, no other containers
+```
+
+The result: the photo app can't see the document archive's database, the media server can't see Home Assistant, and none of the databases can reach the internet. If one app has a bad day, the damage stays inside its own pair of networks.
+
+To be straight about it, this is the design I'm moving towards, not what every container does today. A few apps are already isolated like this, and the rest still share the older proxy network. Migrating each one is a small job: create its network, add it to NPM, and move the app over.
+
+### Ports: published is not exposed {#ports}
+
+A `ports:` entry in Compose publishes a container port on the host. That's not the same as exposing it to the internet. With no forwards on the router, anything published is reachable only from the LAN. Two details are worth getting right anyway:
+
+- **A bare `"443:443"` listens on every interface** of the host: the LAN, a VPN interface if one is up, anything else. Prefixing the LAN address (`"192.168.1.10:443:443"`) limits it to the network I mean.
+- **Docker's published ports bypass host firewalls like ufw.** Docker writes its own iptables rules ahead of them, so "the firewall blocks it" is often not true for containers. Binding to a specific address is more reliable than trusting the firewall.
+
+Port 80 isn't needed for certificates either. NPM gets its Let's Encrypt certificate with the **DNS challenge**: it proves it owns the domain by creating a DNS record through Cloudflare's API, so Let's Encrypt never has to connect in. Port 80 is only there so `http://` links at home get redirected to HTTPS.
+
+The admin UI on `:81` is plain HTTP and only reachable from the LAN. It never gets a proxy host, so it can't be reached through the tunnel.
+
+## Who gets in: logins and certificates {#cloudflare-access}
+
+Both of these deserve a post of their own, and [one is coming](/homelab/tls-and-cloudflare-access/). Here's the short version.
+
+**Logins happen at Cloudflare, before the tunnel.** Cloudflare Access sits in front of every hostname. When several Access rules match a hostname, the most specific one wins, and I use that to get three behaviours:
+
+| Rule | Covers | What a visitor sees |
+|---|---|---|
+| `*.example.com` | every app without its own rule | a login page: sign in with **Authentik** (my own identity provider) or get a **one-time PIN by email** |
+| `auth.example.com` | Authentik itself | no Access check, because it *is* the login page |
+| Home Assistant, Jellyfin | apps with their own phone and TV clients | no Access check ("Bypass"); the app's own login is the gate |
+
+The wildcard rule is the important one. A new service is protected by default: if I add a proxy host and forget everything else, it still sits behind a login. An unauthenticated request never reaches my network at all; Cloudflare turns it away at the edge.
+
+Home Assistant and Jellyfin are the exceptions because their mobile and TV apps can't complete a browser login flow. For those two, the app's own authentication is what keeps people out, so it has to be strong: long passwords, multi-factor where the app supports it, and Home Assistant's built-in IP banning after failed logins.
+
+**TLS has two legs.** From the internet, your browser gets Cloudflare's certificate at the edge, and the tunnel encrypts the trip to my house. At home, there's no Cloudflare in the path, so NPM serves its own Let's Encrypt certificate (from the DNS challenge above). That certificate is the reason I get a valid padlock on my sofa without any traffic leaving the house.
+
+## What broke: the tunnel that banned itself {#what-broke}
+
+The pinned IPs in the compose files look fussy. They're there because of this.
+
+Home Assistant sits behind two proxies (`cloudflared`, then NPM), so it reads the real client address from the `X-Forwarded-For` header. It only believes that header when the request comes from an address on its `trusted_proxies` list. It also bans any address that fails to log in too many times.
+
+I run it strictly: **one** failed login and the address is banned.
+
+At one point `cloudflared` shared a second network with NPM. Docker's internal DNS resolved NPM's name on that other network, so tunnel traffic started arriving from an address Home Assistant didn't trust. Home Assistant then saw *every* remote request as coming from that one address. The first failed login banned it, and with it the entire tunnel. Everything from outside the house stopped working at once, while everything at home looked fine.
+
+The fix had three parts:
+
+- **`cloudflared` joins exactly one network**, so there's only one possible route to NPM.
+- **Both proxies get fixed addresses** on that network (`ipv4_address` above), so they can't change on a restart.
+- **Home Assistant trusts exactly those addresses.** Recent versions moved these settings out of `configuration.yaml` into the UI, but the values are the same as the old YAML:
+
+```yaml
+use_x_forwarded_for: true
+trusted_proxies:
+  - 172.30.0.10/32   # nginx-proxy-manager
+  - 172.30.0.11/32   # cloudflared
+ip_ban_enabled: true
+login_attempts_threshold: 1
+```
+
+The lesson I took from it is that a container on two networks has two identities, and the one Docker picks may not be the one your config expects.
+
+## Gaps and what's next {#whats-next}
+
+No setup is finished. These are the weak spots I know about:
+
+- **Bypass apps are internet-facing.** Home Assistant and Jellyfin depend on their own login. Next step: Cloudflare rate-limiting rules on their login endpoints, and multi-factor everywhere it's supported.
+- **Network migration.** Not every app is on its own network yet (see [above](#one-network-per-service)).
+- **The LAN is trusted.** A compromised device at home skips Cloudflare Access and talks to NPM directly. Putting smart-home and guest devices on a separate VLAN is on the list.
+- **Cloudflare sees the traffic.** TLS ends at its edge, so Cloudflare could in principle read requests. For a homelab I accept that trade for hiding my IP and getting Access for free.
+- **`:latest` tags.** Updates arrive whenever an image is pulled, with no review. Pinning versions and updating on purpose would be better practice.
+
+If you run something similar and have solved any of these more neatly, I'd like to hear about it: [contact@jeffreypost.dev](mailto:contact@jeffreypost.dev).

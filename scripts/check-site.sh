@@ -86,8 +86,9 @@ check_rows() {
   local f
   for f in _site/index.html _site-dev/index.html; do
     [ "$(pillar_order $f)" = "homelab apps health " ] || fail "pillar order in $f is '$(pillar_order $f)'"
-    # the featured slot only shows a written post; the homelab tour is not written yet
-    assert_no_grep 'class="feat"' $f
+    # the featured slot shows the first written post
+    assert_grep '<article class="feat" data-slug="securing-the-homelab">' $f
+    assert_grep 'class="feat".*href="(/|\./)?homelab/securing-the-homelab/' $f
   done
 }
 
@@ -110,15 +111,35 @@ check_chips() {
 check_coming_soon() {
   local f=_site/index.html s c got
   got=$(row_html $f homelab | slugs | tr '\n' ' ')
-  [ "$got" = "homelab-tour self-hosting-plausible underfloor-heating-home-assistant " ] || fail "homelab row is '$got'"
-  for s in homelab-tour self-hosting-plausible underfloor-heating-home-assistant; do
+  # row is date-desc, limit 3, featured post excluded
+  [ "$got" = "tls-and-cloudflare-access homelab-tour self-hosting-plausible " ] || fail "homelab row is '$got'"
+  for s in $got; do
     c=$(card_html $f $s)
     grep -q 'data-status="coming-soon"' <<<"$c" || fail "$s is not coming-soon"
     grep -q '<span class="chip chip-coming-soon">Coming soon</span>' <<<"$c" || fail "$s has no Coming soon chip"
     grep -q '<a ' <<<"$c" && fail "coming-soon card $s is linked"
+  done
+  for s in tls-and-cloudflare-access homelab-tour self-hosting-plausible underfloor-heating-home-assistant; do
     assert_grep '<meta name="robots" content="noindex"' _site/homelab/$s/index.html
     assert_no_grep 'Draft\.' _site/homelab/$s/index.html
   done
+}
+
+check_security_post() {
+  local f=_site/homelab/securing-the-homelab/index.html id
+  assert_file $f
+  [ -f $f ] || return
+  assert_no_grep 'name="robots" content="noindex"' $f
+  assert_grep '<svg[^>]*role="img"' $f
+  # every in-page link in the diagram lands on a real section
+  for id in $(grep -oE 'href="#[A-Za-z0-9_-]+"' $f | sed -E 's/href="#(.*)"/\1/' | sort -u); do
+    grep -qE "id=\"$id\"" $f || fail "diagram/link target #$id has no id in $f"
+  done
+  [ "$(grep -oE 'class="netlink"' $f | wc -l)" -ge 5 ] || fail "diagram has fewer than 5 linked boxes"
+  # sanitised configs: placeholder LAN IP and token only
+  if grep -oE '192\.168\.[0-9]+\.[0-9]+' $f | grep -vqx '192\.168\.1\.10'; then fail "real-looking LAN IP in $f"; fi
+  assert_no_grep 'TUNNEL_TOKEN[=:][ "'"'"']*[A-Za-z0-9_-]{20,}' $f
+  assert_no_grep '(PASSWORD|SECRET)[A-Z_]*[=:][ "'"'"']*[A-Za-z0-9]{6,}' $f
 }
 
 check_under_construction() {
