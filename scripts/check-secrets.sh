@@ -14,7 +14,11 @@ while IFS= read -r f; do
   if grep -qE "$name_re" <<<"$f"; then problems+=("forbidden file: $f"); fi
 done < <(git diff --cached --name-only --diff-filter=ACMR)
 
-content_re='-----BEGIN [A-Z ]*PRIVATE KEY-----|(api[_-]?key|secret|token|passwd|password)[A-Za-z_]*[[:space:]]*[:=][[:space:]]*[^[:space:]$]{8,}|ghp_[A-Za-z0-9]{20,}|AKIA[0-9A-Z]{16}'
+# High-confidence patterns: checked on every added line.
+strong_re='-----BEGIN [A-Z ]*PRIVATE KEY-----|ghp_[A-Za-z0-9]{20,}|github_pat_[A-Za-z0-9_]{20,}|AKIA[0-9A-Z]{16}'
+# Loose "password=..." style pattern: skipped on minified lines (>1000 chars),
+# e.g. plotting libraries embedded in notebook outputs, where it only hits identifiers.
+loose_re='(api[_-]?key|secret|token|passwd|password)[A-Za-z_]*[[:space:]]*[:=][[:space:]]*[^[:space:]$]{8,}'
 
 # Added lines, tagged with their file: "file<TAB>line"
 added=$(git diff --cached -U0 --diff-filter=ACMR | awk '
@@ -23,7 +27,7 @@ added=$(git diff --cached -U0 --diff-filter=ACMR | awk '
 
 if [ -n "$added" ]; then
   while IFS= read -r hit; do problems+=("possible secret: $hit"); done \
-    < <(grep -iE -- "$content_re" <<<"$added" | grep -v '^scripts/check-secrets\.sh	' | grep -v '^tests/check_secrets_test\.sh	' | cut -c1-160)
+    < <( { grep -E -- "$strong_re" <<<"$added"; grep -iE -- "$loose_re" <<<"$added" | awk 'length($0) <= 1000'; } | sort -u | grep -v '^scripts/check-secrets\.sh	' | grep -v '^tests/check_secrets_test\.sh	' | cut -c1-160)
   if [ -s "$denylist" ]; then
     while IFS= read -r hit; do problems+=("denylisted text in: ${hit%%	*}"); done \
       < <(grep -iF -f <(grep -v '^[[:space:]]*$' "$denylist") <<<"$added")

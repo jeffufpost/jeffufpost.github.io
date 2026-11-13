@@ -29,6 +29,9 @@ run_case github_token      fail post.md            'token ghp_abcdefghijklmnopqr
 run_case aws_key           fail post.md            'AKIAABCDEFGHIJKLMNOP'               'post.md'
 run_case clean_file        pass index.qmd          'Hello homelab'
 run_case placeholder_ok    pass compose.yml        'POSTGRES_PASSWORD=${POSTGRES_PASSWORD}'
+PAD=$(printf "%1100s" "" | tr " " x)   # minified bundles are very long single lines
+run_case minified_lib       pass vendor.js          "var a={accessToken:e._mapboxAccessToken};$PAD"
+run_case minified_with_ghp  fail vendor.js          "var t='ghp_abcdefghijklmnopqrstuvwxyz12';$PAD" 'vendor.js'
 
 # denylist: a forbidden word in staged content is rejected
 tmp=$(mktemp -d); ( cd "$tmp" && git init -q && echo 'I worked at Acmecorp' > a.md && git add a.md && echo 'acmecorp' > deny.txt )
