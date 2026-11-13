@@ -1,15 +1,141 @@
 ---
 title: "Self-hosting Plausible to see where visitors come from"
-description: "Privacy-friendly analytics on my own server, and what it shows about this site."
-date: 2026-11-18
+description: "Privacy-friendly analytics on my own server: how it's wired into the homelab, what eighteen months of data say about this site, and the six months it quietly recorded nothing."
+date: 2026-11-14
 image: thumb.svg
 pillar: homelab
-status: coming-soon
+toc: true
 include-in-header:
-  text: <meta name="robots" content="noindex">
-
+  - text: |
+      <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
 ---
 
-[Coming soon]{.chip .chip-coming-soon}
+Every page on this site loads a small script from my own server. It records that a page was viewed, where the visitor came from, and roughly which country and device they're on. It sets no cookies and stores no IP addresses, so there's no consent banner either.
 
-This post is being written. Check back soon, or see what else is on the [homepage](/).
+That script is [Plausible](https://plausible.io/), the open-source analytics tool, running in my homelab as its free Community Edition. This post covers why I run it, how it fits behind the same front door as everything else, and what it has actually told me about this site. The most useful thing it told me turned out to be about Plausible itself.
+
+## Why run analytics at all {#why}
+
+This site is small, and I'm not trying to grow an audience with dashboards. I want answers to three plain questions:
+
+1. **Does anyone read it?** And if so, which pages?
+2. **Where do they come from?** Search, a link on another site, or a link I sent someone myself?
+3. **Do they do the thing the page is for?** Click through to an app, download a PDF, ask for my CV.
+
+Plausible answers all three on a single page, without me having to trust a third party with my visitors' data. Google Analytics is still on the site too, so this isn't a "no Google" site. But Plausible is the one whose data lives on my own disk.
+
+## How it runs {#setup}
+
+Plausible Community Edition is three containers: the Plausible app itself, Postgres for accounts and settings, and ClickHouse for the events. I started from the official [community-edition](https://github.com/plausible/community-edition) repository and changed very little. Trimmed, with secrets kept in `.env`:
+
+```yaml
+services:
+  plausible_db:
+    image: postgres:16-alpine
+    restart: always
+    volumes:
+      - db-data:/var/lib/postgresql/data
+
+  plausible_events_db:
+    image: clickhouse/clickhouse-server:24.12-alpine
+    restart: always
+    volumes:
+      - event-data:/var/lib/clickhouse
+      # the repo's small-server profile: smaller caches, fewer threads
+      - ./clickhouse/low-resources.xml:/etc/clickhouse-server/config.d/low-resources.xml:ro
+
+  plausible:
+    image: ghcr.io/plausible/community-edition:v3.2.1   # pinned: upgrades include migrations
+    restart: always
+    environment:
+      BASE_URL: ${BASE_URL}
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+      MAXMIND_LICENSE_KEY: ${MAXMIND_LICENSE_KEY}       # free GeoLite2 database for countries
+      MAXMIND_EDITION: ${MAXMIND_EDITION}
+    networks:
+      default:          # its own databases
+      npm-plausible:    # shared with the reverse proxy, nothing else
+
+networks:
+  npm-plausible:
+    external: true
+```
+
+Two things there connect to the rest of the homelab.
+
+**It has its own network.** As in my [post on securing the homelab](/homelab/securing-the-homelab/#one-network-per-service), the app shares one small network with nginx-proxy-manager and nothing else. The databases are on the stack's default network, which the proxy can't see. Plausible is one of the services that's already been moved to this layout.
+
+**The image is pinned.** Most of my containers track `:latest`, which I flagged as a weak spot in that post. The official repository pins Plausible to a version, and I've kept it that way: an upgrade runs database migrations on both Postgres and ClickHouse, and I want to read the release notes before that happens, not discover it the morning after.
+
+The whole stack is light. Right now the three containers use about 460 MB of RAM between them, and eighteen months of data take up a little over 100 MB on disk.
+
+## Public script, private dashboard {#access}
+
+Plausible is the one service in my homelab that *has* to be reachable by strangers. Every visitor's browser needs to fetch the script and send events back. But the dashboard, with all the stats, should be for me alone.
+
+Cloudflare Access handles that split by path. Two paths are public:
+
+| Path | What it is | Who can reach it |
+|---|---|---|
+| `/js/…` | the tracking script | anyone |
+| `/api/event` | where the script sends each pageview | anyone |
+| everything else | the dashboard, settings, login | only me, after the usual login |
+
+So a visitor's browser can load the script and report a pageview, but anyone who opens the dashboard URL meets the same Cloudflare Access login as the rest of my apps. Even Plausible's own login page is never exposed. That's two layers on the part that matters, and the public part can't do anything except accept events.
+
+## What the script records {#the-script}
+
+Plausible has one script with optional extensions, chosen by the file name. This site loads:
+
+```html
+<script defer data-domain="jeffreypost.dev"
+  src="https://plausible.example.com/js/script.file-downloads.outbound-links.pageview-props.tagged-events.js"></script>
+```
+
+Each part of that name switches something on:
+
+- **`file-downloads`** counts clicks on links to files, such as the PDF of my thesis.
+- **`outbound-links`** counts clicks that leave the site, for example to GitHub or to one of my apps.
+- **`pageview-props`** lets a page attach extra properties to its pageview.
+- **`tagged-events`** turns any link with a special CSS class into a custom event. The "Request CV" button has the class `plausible-event-name=Request+CV`, so each click shows up as a goal, with no extra JavaScript.
+
+There's one more small trick. When I send someone a link to this site, I add `?ref=` and a short label. Plausible lists `ref` values as a source of their own, so I can tell a visit from a link I shared apart from a visit that came from search. The same label also goes into the subject line of the "Request CV" email.
+
+### What it doesn't record {#privacy}
+
+Plausible doesn't set cookies or use any other storage in the browser. To count unique visitors, it combines the IP address and browser string with the site and a secret salt that changes every day, hashes the result, and throws the IP away. The same person on two different days counts as two visitors, and there's nothing that could follow someone across sites. Countries come from the IP address at the moment of the request, using a local GeoLite2 database, so even that lookup doesn't leave my server.
+
+## What it shows about this site {#the-numbers}
+
+Here is the honest version. Since May 2025, the site has had about 250 pageviews from about 155 unique visitors. That's a little over 20 visitors in a good month.
+
+{{< include figures/monthly.html >}}
+
+A few things in the data were useful anyway.
+
+- **Almost everyone lands on the homepage.** More than nine in ten pageviews are the homepage, and most visits stop there: the bounce rate is 77%. The redesign tries to fix exactly that, by putting the writing on the front page.
+- **Most visitors arrive with no referrer.** Nearly nine in ten visits have no source at all. That's people typing the address or clicking a link in an email, a PDF or a chat app, which strips the referrer. Search engines sent a grand total of five visits. Most of my traffic comes from links I hand out, and that is exactly why the `?ref=` labels matter.
+- **Desktop beats mobile five to one.** Again consistent with links opened from email at a desk. It's also a reminder to check the interactive figures on a laptop first.
+- **Some "visitors" aren't people.** A handful of visits came with referrers from spam domains, and Plausible's own filter dropped about a dozen known bots before they were counted. Nineteen visits from Singapore, for a site with no obvious reason to be read there, look automated too. At this scale a few bots move the numbers a lot, so I read every figure as "roughly".
+
+None of this needs ClickHouse or anything fancy. But it's the difference between guessing whether anyone reads the site and knowing.
+
+## What broke: six months of silence {#what-broke}
+
+Look at the chart again. From late March to mid-October 2026 there's nothing at all. No visits, no bounces, not a single event from a real browser.
+
+At first I assumed nobody visited. Then I looked closer:
+
+- **Plausible's ingest counters** recorded a few blocked bots in early April, then nothing.
+- **The proxy logs** show the dashboard loading normally in April. So the server was up and reachable.
+- **In mid-October** I reworked the stack, and events started arriving again the same day.
+
+I never found the exact cause. Something between the site's script and Plausible's event endpoint stopped working, and the stack I replaced it with doesn't have the problem. What I did learn is the real lesson of this post: **an analytics server that fails quietly looks exactly like a website nobody visits.** Nothing alerted me. The dashboard loaded fine and showed a flat line, and a flat line is believable for a small site.
+
+The fix is the same as for any monitoring: watch the watcher. My next step is a simple external check that loads a page, waits, and confirms a fresh event arrived. If it hasn't, I get a message. That's a few lines in the automation tools I already run, and it would have saved six months of data.
+
+## Would I recommend it? {#verdict}
+
+For a personal site, yes, with one condition: only if you already run a homelab with a reverse proxy and some way to keep the dashboard private. Plausible itself was the easy part. The work was in the things around it: the network, the access rules, and, as it turned out, noticing when it stopped.
+
+If you'd rather not host it, Plausible's paid hosted version is the same software and the same privacy model, without the six months of silence.
