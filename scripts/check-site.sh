@@ -155,6 +155,10 @@ check_thesis_post() {
   assert_grep 'href="thesis\.pdf"' $f
   assert_grep 'subject=Thesis%20code%20request' $f
   assert_grep 'stochastic-hiv-model' $f
+  assert_grep 'Three changes were needed' $f
+  assert_grep 'male circumcision and attitudes to wife beating along the second' $f
+  assert_grep 'fell only slowly until about 1995' $f
+  assert_no_grep 'Two changes were needed' $f
   assert_grep 'hiv-ssa-thesis' _site/health/stochastic-hiv-model/index.html
   assert_no_grep '342-576|/mount/|/home/' $d
   # not featured: the homelab security post keeps the slot

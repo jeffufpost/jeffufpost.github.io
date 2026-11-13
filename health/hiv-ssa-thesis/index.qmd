@@ -38,7 +38,7 @@ HIV incidence and prevalence (adults aged 15 to 49, 1990 to 2019) come from UNAI
 
 ## Method
 
-**A map of 46 indicators in two dimensions.** Forty-six numbers per survey are impossible to look at, so I used principal component analysis (PCA), fitted on the most recent surveys, to find the directions along which countries differ most. The first two components explain **61% and 12.5%** of the variation, and eight components explain over 95%. Figure 1 shows what each direction means: religion and male circumcision pull countries apart along the first axis, and attitudes to wife beating and rurality along the second.
+**A map of 46 indicators in two dimensions.** Forty-six numbers per survey are impossible to look at, so I used principal component analysis (PCA), fitted on the most recent surveys, to find the directions along which countries differ most. The first two components explain **61% and 12.5%** of the variation, and eight components explain over 95%. Figure 1 shows what each direction means: religion and male circumcision pull countries apart along the first axis, and male circumcision and attitudes to wife beating along the second, followed by rurality.
 
 **Five-year windows.** Surveys happen in different years in different countries, so I grouped them into sliding five-year windows (2000–04, 2001–05, … 2014–18). Each window is projected onto the same map, which turns the map into a film.
 
@@ -121,7 +121,7 @@ The effective contact rate tells a different story. It fell steeply everywhere, 
 Clustering the β curves themselves gives two groups that don't follow the sociobehavioural ones:
 
 - **Early decline** (18 countries): β was already falling in 1990 and levelled off around 2000, going from 0.27 to 0.09 to 0.04.
-- **Late decline** (11 countries): β only started falling around 1995 and reached its low plateau between 2005 and 2010, going from 0.30 to 0.15 to 0.06.
+- **Late decline** (11 countries): β fell only slowly until about 1995 and reached its low plateau between 2005 and 2010, going from 0.30 to 0.15 to 0.06.
 
 ```{=html}
 {{< include figures/fig5_maps.html >}}
@@ -145,7 +145,7 @@ Some honest limits:
 
 ## About this re-run
 
-The figures here come from re-running the original analysis code on the original data with today's versions of the libraries, then redrawing the charts. Most results match the thesis exactly. A few numbers moved by a point or two, and the text above quotes the re-run, so it may differ slightly from the PDF. Two changes were needed: newer scikit-learn orients the principal components differently, and the 2021 UNAIDS export had no incidence figures for Mali, so those came from an earlier UNAIDS release.
+The figures here come from re-running the original analysis code on the original data with today's versions of the libraries, then redrawing the charts. Most results match the thesis exactly. A few numbers moved by up to three points, and the text above quotes the re-run, so it may differ slightly from the PDF. Three changes were needed: newer scikit-learn orients the principal components differently; the 2021 UNAIDS export had no incidence figures for Mali, so those came from an earlier UNAIDS release; and the β clustering keeps the best of ten runs instead of a single one (see the limits above). The weights in Figure 1 use a different scale from the percentages in the thesis text, but rank the indicators in much the same order.
 
 The full code isn't public yet. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Thesis%20code%20request) and I'll share it.
 
