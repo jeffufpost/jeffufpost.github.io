@@ -10,6 +10,7 @@ project:
   render:
     - "*.qmd"
     - "*.ipynb"
+    - "health/**/*.md"
     - "!README.md"
     - "!tests/"
     - "!scripts/"

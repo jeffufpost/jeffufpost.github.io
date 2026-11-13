@@ -155,6 +155,80 @@ check_no_nested_output() {
   [ -z "$stray" ] || fail "source files in output: $stray"
 }
 
+# Old Scattered Thoughts URLs (posts/<dir>/<file>.html) -> new /health/<dir>/<file>.html
+OLD_POSTS=(
+  2021-09-23-stochastic-HIV-model-fast/2021-09-23-stochastic-HIV-model-fast.html
+  2021-05-05-stochastic-HIV-model/2021-05-05-stochastic-HIV-model.html
+  2020-06-02-real-world/2020-06-02-real-world.html
+  2020-04-15-web-scraping/2020-04-15-web-scraping.html
+  2020-04-12-on-testing/2020-04-12-on-testing.html
+  2020-04-02-convolution/2020-04-02-convolution.html
+  2020-04-02-control-measures/2020-04-02-control-measures.html
+  2020-04-01-diagnosing-R0-and-peak-infectious/2020-04-01-diagnosing-R0-and-peak-infectious.html
+  2020-03-31-stochastic_model/2020-03-31-stochastic_model.html
+  2020-03-25-proba-distrib/2020-03-25-proba-distrib.html
+  2020-03-18-deterministic-numerical-solutions/2020-03-18-deterministic-numerical-solutions.html
+  2020-03-15-compartmentalization/2020-03-15-compartmentalization.html
+  2020-03-12-COVID-19-Tracker/2020-03-12-COVID-19-Tracker.html
+)
+# Legacy copies the old blog also served; they point at the 2021-05-05 HIV post.
+LEGACY_HIV=(
+  2021_05_05_stochastic_HIV_model/2021_05_05_stochastic_HIV_model.html
+  2021-05-07-stochastic_HIV_model/2021-05-07-stochastic-HIV-model.html
+  2021-05-07-stochastic_HIV_model/2021-05-07-stochastic_HIV_model.html
+)
+
+assert_redirect() { # old-file target-substring
+  local f="_site/scattered-thoughts/$1"
+  [ -f "$f" ] || { fail "no redirect page at /scattered-thoughts/$1"; return; }
+  grep -qF "window.location.replace(redirect)" "$f" || fail "/scattered-thoughts/$1 is not a redirect"
+  grep -qF "$2" "$f" || fail "/scattered-thoughts/$1 does not point to $2"
+}
+
+check_redirects() {
+  local p
+  for p in "${OLD_POSTS[@]}"; do assert_redirect "posts/$p" "health/$p"; [ -f "_site/health/$p" ] || fail "missing migrated page health/$p"; done
+  for p in "${LEGACY_HIV[@]}"; do assert_redirect "posts/$p" "health/2021-05-05-stochastic-HIV-model/2021-05-05-stochastic-HIV-model.html"; done
+  assert_redirect index.html "health/"
+  assert_redirect about.html "about/"
+}
+
+check_local_links() {
+  # every relative or root-relative src/href in rendered pages must exist
+  local f dir ref target bad=0
+  while IFS= read -r f; do
+    dir=$(dirname "$f")
+    while IFS= read -r ref; do
+      ref=${ref%%#*}; ref=${ref%%\?*}
+      [ -z "$ref" ] && continue
+      [[ $ref =~ ^[A-Za-z0-9_./%~+-]+$ ]] || continue   # skip strings from inline scripts
+      case "$ref" in http:*|https:*|mailto:*|data:*|javascript:*|//*) continue;; esac
+      if [[ $ref == /* ]]; then target="_site$ref"; else target="$dir/$ref"; fi
+      [[ $target == */ ]] && target="${target}index.html"
+      [ -e "$target" ] || [ -e "$target/index.html" ] || { fail "broken link in $f: $ref"; bad=$((bad+1)); }
+      [ $bad -gt 10 ] && return
+    done < <(grep -oE '(src|href)="[^"]+"' "$f" | sed -E 's/^(src|href)="(.*)"$/\2/')
+  done < <(find _site -name '*.html' -not -path '*/site_libs/*' -not -path '*/scattered-thoughts/*')
+}
+
+check_series() {
+  local got
+  got=$(slugs < _site/health/epidemic-modelling/index.html | tr '\n' ' ')
+  [ "$got" = "2020-03-15-compartmentalization 2020-03-18-deterministic-numerical-solutions 2020-03-25-proba-distrib 2020-03-31-stochastic_model 2020-04-01-diagnosing-R0-and-peak-infectious 2020-04-02-control-measures 2020-04-02-convolution 2020-06-02-real-world " ] || fail "epidemic-modelling series is '$got'"
+  got=$(slugs < _site/health/stochastic-hiv-model/index.html | tr '\n' ' ')
+  [ "$got" = "2021-05-05-stochastic-HIV-model 2021-09-23-stochastic-HIV-model-fast " ] || fail "hiv series is '$got'"
+}
+
+check_health_row() {
+  local got; got=$(row_html _site/index.html health | slugs | tr '\n' ' ')
+  [ "$got" = "stochastic-hiv-model epidemic-modelling health-data-app " ] || fail "health row is '$got'"
+  got=$(slugs < _site/health/index.html | tr '\n' ' ')
+  for s in stochastic-hiv-model epidemic-modelling 2020-04-15-web-scraping 2020-04-12-on-testing 2020-03-12-COVID-19-Tracker health-data-app; do
+    grep -qw -- "$s" <<<"$got" || fail "health index lacks $s"
+  done
+  grep -qw 2020-03-15-compartmentalization <<<"$got" && fail "series part listed on health index"
+}
+
 # ---------------------------------------------------------------- runner
 
 render() {

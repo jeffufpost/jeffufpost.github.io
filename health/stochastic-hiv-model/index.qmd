@@ -1,0 +1,23 @@
+---
+title: "A stochastic HIV model, and making it fast"
+description: "An individual-level model of HIV transmission in a population aged 15 to 49, then a much faster version of it."
+image: ../images/covers/hiv-model.svg
+date: 2021-09-23
+series-page: true
+toc: false
+page-layout: full
+listing:
+  id: parts
+  contents: ["../*/*.ipynb", "../*/*.qmd", "../*/*.md"]
+  template: ../../_templates/cards.ejs.md
+  fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+  sort: "date"
+  template-params:
+    series: hiv-model
+    section: health
+---
+
+An individual-level model of HIV transmission in a population aged 15 to 49, then a much faster version of it.
+
+::: {#parts}
+:::

@@ -1,5 +1,6 @@
 ---
 title: "About"
+aliases: ["/scattered-thoughts/about.html"]
 description: "Electrical engineer specialising in medical technology, public health, and data, with a homelab on the side."
 ---
 

@@ -1,0 +1,8 @@
+# Applies to every page under health/ (each page can override).
+pillar: health
+freeze: true
+title-block-banner: false
+page-layout: article
+toc: true
+toc-depth: 5
+author: "Jeffrey Post"

@@ -6,12 +6,12 @@ page-layout: full
 title-block-banner: false
 listing:
   - id: featured
-    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb"]
+    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb", "health/*/*.md"]
     template: _templates/featured.ejs.md
     fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
     sort: "date desc"
   - id: row-homelab
-    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb"]
+    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb", "health/*/*.md"]
     template: _templates/cards.ejs.md
     fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
     sort: "date desc"
@@ -24,7 +24,7 @@ listing:
       more-href: /homelab/
       more-text: "All homelab posts →"
   - id: row-apps
-    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb"]
+    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb", "health/*/*.md"]
     template: _templates/cards.ejs.md
     fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
     sort: "date desc"
@@ -37,7 +37,7 @@ listing:
       more-href: /apps/
       more-text: "All apps →"
   - id: row-health
-    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb"]
+    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb", "health/*/*.md"]
     template: _templates/cards.ejs.md
     fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
     sort: "date desc"

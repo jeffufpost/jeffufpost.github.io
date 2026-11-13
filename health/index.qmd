@@ -1,9 +1,11 @@
 ---
 title: "Health & epidemiology"
+pillar: none
+aliases: ["/scattered-thoughts/index.html"]
 page-layout: full
 listing:
   id: list
-  contents: ["../homelab/*/index.qmd", "../apps/*/index.qmd", "../health/*/*.qmd", "../health/*/*.ipynb"]
+  contents: ["../homelab/*/index.qmd", "../apps/*/index.qmd", "../health/*/*.qmd", "../health/*/*.ipynb", "../health/*/*.md"]
   template: ../_templates/cards.ejs.md
   fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
   sort: "date desc"
