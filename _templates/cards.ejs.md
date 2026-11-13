@@ -44,6 +44,11 @@ function meta(item) {
   const st = statusOf(item);
   if (chipText[st]) bits.push(`<span class="chip chip-${st}">${chipText[st]}</span>`);
   if (Array.isArray(item.stack) && item.stack.length) bits.push(`<span>${item.stack.map(esc).join(" · ")}</span>`);
+  else if (item["series-page"]) {
+    // A series card shows how many parts it has, not the index page's own reading time.
+    const n = items.filter((it) => it.series && it.series === item["series-of"]).length;
+    bits.push(`<span>${n} part${n === 1 ? "" : "s"} · ${esc(String(item.date || "").slice(-4))}</span>`);
+  }
   else if (item.kind !== "app") {
     if (item["reading-time"]) bits.push(`<span>${esc(item["reading-time"])}</span>`);
     else if (item.date) bits.push(`<span>${esc(String(item.date).slice(-4))}</span>`);

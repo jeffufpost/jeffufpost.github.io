@@ -4,13 +4,14 @@ description: "An individual-level model of HIV transmission in a population aged
 image: ../images/covers/hiv-model.svg
 date: 2021-09-23
 series-page: true
+series-of: hiv-model
 toc: false
 page-layout: full
 listing:
   id: parts
   contents: ["../*/*.ipynb", "../*/*.qmd", "../*/*.md"]
   template: ../../_templates/cards.ejs.md
-  fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+  fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, series-of, reading-time]
   sort: "date"
   template-params:
     series: hiv-model

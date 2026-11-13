@@ -10,7 +10,8 @@ _site-dev/
 *.p12
 id_rsa*
 id_ed25519*
-secrets*
+secrets.*
+*.secrets
 
 /.quarto/
 **/*.quarto_ipynb

@@ -246,6 +246,32 @@ check_workflow() {
   assert_grep '^Sitemap: https://jeffreypost.dev/sitemap.xml' _site/robots.txt
 }
 
+check_home_single_headline() {
+  # Quarto always emits an empty header element; it must stay empty
+  grep -oE '<header id="title-block-header"[^>]*>.{0,40}' _site/index.html | grep -vqE '>(</header>)?$' && fail "homepage title block has content"
+  local n; n=$(grep -o '<h1' _site/index.html | wc -l)
+  [ "$n" -eq 1 ] || fail "homepage has $n <h1> elements"
+}
+
+check_gitignore_keeps_posts() {
+  local p
+  for p in homelab/secrets-management/index.qmd homelab/managing-secrets-with-sops/index.qmd health/token-bucket/index.qmd; do
+    git check-ignore -q "$p" && fail ".gitignore would hide $p"
+  done
+  for p in .env app/.env.local secrets.env deploy/server.key; do
+    git check-ignore -q "$p" || fail ".gitignore does not cover $p"
+  done
+}
+
+check_series_card_meta() {
+  local c
+  c=$(card_html _site/index.html epidemic-modelling)
+  grep -q 'min</span>' <<<"$c" && fail "series card shows a reading time"
+  grep -q '<span>8 parts · 2020</span>' <<<"$c" || fail "series card does not say '8 parts · 2020'"
+  c=$(card_html _site/index.html stochastic-hiv-model)
+  grep -q '<span>2 parts · 2021</span>' <<<"$c" || fail "hiv series card does not say '2 parts · 2021'"
+}
+
 # ---------------------------------------------------------------- runner
 
 render() {

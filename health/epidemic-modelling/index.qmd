@@ -4,13 +4,14 @@ description: "From compartmental models to real-world COVID-19 data, built up on
 image: ../images/covers/part1-compartments.svg
 date: 2020-06-02
 series-page: true
+series-of: epidemic-modelling
 toc: false
 page-layout: full
 listing:
   id: parts
   contents: ["../*/*.ipynb", "../*/*.qmd", "../*/*.md"]
   template: ../../_templates/cards.ejs.md
-  fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+  fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, series-of, reading-time]
   sort: "date"
   template-params:
     series: epidemic-modelling

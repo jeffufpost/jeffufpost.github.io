@@ -1,5 +1,4 @@
 ---
-title: "Jeffrey Post"
 pagetitle: "Jeffrey Post"
 description: "Homelab and home automation write-ups, small apps built on open data, and public health work."
 page-layout: full
@@ -8,12 +7,12 @@ listing:
   - id: featured
     contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb", "health/*/*.md"]
     template: _templates/featured.ejs.md
-    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, series-of, reading-time]
     sort: "date desc"
   - id: row-homelab
     contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb", "health/*/*.md"]
     template: _templates/cards.ejs.md
-    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, series-of, reading-time]
     sort: "date desc"
     template-params:
       pillar: homelab
@@ -26,7 +25,7 @@ listing:
   - id: row-apps
     contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb", "health/*/*.md"]
     template: _templates/cards.ejs.md
-    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, series-of, reading-time]
     sort: "date desc"
     template-params:
       pillar: apps
@@ -39,7 +38,7 @@ listing:
   - id: row-health
     contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb", "health/*/*.md"]
     template: _templates/cards.ejs.md
-    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, series-of, reading-time]
     sort: "date desc"
     template-params:
       pillar: health
