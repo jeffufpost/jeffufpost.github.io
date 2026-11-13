@@ -1,0 +1,11 @@
+---
+title: "My homelab in 2026: what runs, how it's wired, and what broke"
+description: "A tour of the stack: reverse proxy, single sign-on, backups, monitoring, and the self-hosted analytics behind this page."
+date: 2026-11-20
+image: thumb.svg
+pillar: homelab
+draft: true
+featured: true
+---
+
+Draft.

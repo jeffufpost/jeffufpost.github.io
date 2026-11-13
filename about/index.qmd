@@ -1,0 +1,10 @@
+---
+title: "About"
+description: "Electrical engineer specialising in medical technology, public health, and data, with a homelab on the side."
+---
+
+I'm Jeffrey. I trained as an electrical engineer specialising in medical technology, then went on to an M.Sc. in Public Health, and I'm now doing an MBA because I want to understand the business decisions that data is supposed to inform. Along the way I've worked in medtech, high-tech biotech and global health research, on everything from hospital radiosurgery systems to epidemic models and data pipelines.
+
+Outside of that I run a homelab: dozens of self-hosted services, Home Assistant running the house, and more dashboards than I need. This site is where I write it all up, along with the small apps I build on open data.
+
+If you'd like help with your own homelab (paid for bigger projects, free for quick questions) or you're hiring for data roles, get in touch: <span class="font-monospace">contact@jeffreypost.dev</span> · <a class="cv-link plausible-event-name=Request+CV" href="mailto:contact@jeffreypost.dev?subject=CV%20request">Request CV</a>

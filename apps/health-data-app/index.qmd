@@ -1,0 +1,20 @@
+---
+title: "A public health data app"
+description: "A small interactive app on an open health dataset."
+date: 2026-09-01
+image: thumb.svg
+pillar: health
+kind: app
+status: planned
+
+include-in-header:
+  text: <meta name="robots" content="noindex">
+---
+
+[Planned]{.chip .chip-planned}
+
+A small interactive app on an open health dataset.
+
+## How it's built
+
+This app is planned. A write-up will appear here once work starts.

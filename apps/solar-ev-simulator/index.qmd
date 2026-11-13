@@ -1,0 +1,19 @@
+---
+title: "Solar & EV simulator"
+description: "Size panels and a battery from hourly sun data and your own consumption."
+date: 2026-10-01
+image: thumb.svg
+pillar: apps
+kind: app
+status: in-progress
+stack: [Python, pandas, PVGIS]
+
+---
+
+[In progress]{.chip .chip-in-progress}
+
+Size panels and a battery from hourly sun data and your own consumption.
+
+## How it's built
+
+Build notes coming soon: a public version is being prepared.

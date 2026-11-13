@@ -16,7 +16,7 @@ assert_no_grep() { if grep -rqE -- "$1" "$2" 2>/dev/null; then fail "'$1' found 
 
 # Print the HTML of one homepage row: section data-pillar=<p> ... </section>
 row_html() { # file pillar
-  awk -v p="data-pillar=\"$2\"" 'index($0,p){on=1} on{print} on && /<\/section>/{exit}' "$1"
+  sed -E "s#<section#\n<section#g; s#</section>#</section>\n#g" "$1" | awk -v p="data-pillar=\"$2\"" 'index($0,p){on=1} on{print} on && /<\/section>/{exit}'
 }
 # Card slugs in order, from stdin
 slugs() { grep -oE 'class="card[^"]*" data-slug="[^"]+"' | sed -E 's/.*data-slug="([^"]+)"/\1/'; }
@@ -74,6 +74,85 @@ check_fonts_and_theme() {
   [ -n "$css" ] || { fail "no bootstrap css"; return; }
   grep -qi 'f8fafc' "$css" || fail "page background #f8fafc not in theme css"
   grep -qi '16202b' "$css" || fail "text colour #16202b not in theme css"
+}
+
+# Print the HTML of one card: from its <article ... data-slug="<slug>"> to </article>
+card_html() { # file slug
+  sed -E "s#<article#\n<article#g; s#</article>#</article>\n#g" "$1" | awk -v s="data-slug=\"$2\"" 'index($0,s) && /<article/{on=1} on{print} on && /<\/article>/{exit}'
+}
+pillar_order() { grep -oE '<section class="pillar" data-pillar="[a-z]+"' "$1" | sed -E 's/.*data-pillar="([a-z]+)"/\1/' | tr '\n' ' '; }
+
+check_rows_dev() {
+  local f=_site-dev/index.html
+  [ "$(pillar_order $f)" = "homelab apps health " ] || fail "pillar order is '$(pillar_order $f)'"
+  assert_grep '<article class="feat" data-slug="homelab-tour"' $f
+  row_html $f homelab | grep -q 'data-slug="homelab-tour"' && fail "featured post repeated in homelab row"
+  [ "$(row_html $f homelab | slugs | wc -l)" -ge 1 ] || fail "homelab row has no cards"
+}
+
+check_apps_order() {
+  local got; got=$(row_html _site-dev/index.html apps | slugs | tr '\n' ' ')
+  [ "$got" = "dvf-map solar-ev-simulator couch-remote " ] || fail "apps row is '$got'"
+}
+
+check_chips() {
+  local f=_site-dev/index.html c
+  c=$(card_html $f couch-remote)
+  grep -q 'data-status="planned"' <<<"$c" || fail "couch-remote not planned"
+  grep -q '<span class="chip chip-planned">Planned</span>' <<<"$c" || fail "couch-remote has no Planned chip"
+  grep -q '<a ' <<<"$c" && fail "planned card contains a link"
+  c=$(card_html $f dvf-map)
+  grep -q '<span class="chip chip-in-progress">In progress</span>' <<<"$c" || fail "dvf-map has no In progress chip"
+  grep -q '<a class="card-link"' <<<"$c" || fail "dvf-map card not linked"
+}
+
+check_drafts_gone() {
+  [ -e _site/homelab/homelab-tour ] && fail "draft homelab-tour rendered in production"
+  assert_no_grep 'self-hosting-plausible' _site
+  assert_no_grep 'homelab-tour' _site
+  assert_no_grep '<section class="pillar" data-pillar="homelab"' _site/index.html
+  assert_no_grep 'class="feat"' _site/index.html
+}
+
+check_no_empty_rows() {
+  local f p
+  for f in _site/index.html _site-dev/index.html; do
+    for p in $(pillar_order $f); do
+      [ "$(row_html $f $p | slugs | wc -l)" -ge 1 ] || fail "empty $p row in $f"
+    done
+  done
+}
+
+check_planned_page() {
+  local f=_site/apps/couch-remote/index.html
+  assert_file $f
+  assert_grep 'Planned' $f
+  assert_grep '<meta name="robots" content="noindex"' $f
+  if grep -rqi 'iptv' _site --include='*.html' --include='*.xml' --include='*.json'; then fail "IPTV mentioned in site"; fi
+}
+
+check_about() {
+  local f=_site/about/index.html
+  assert_file $f
+  assert_grep 'M\.Sc\. in Public Health' $f
+  assert_grep 'contact@jeffreypost\.dev' $f
+  assert_grep 'cv-link' $f
+}
+
+check_section_pages() {
+  assert_file _site/homelab/index.html
+  assert_file _site/apps/index.html
+  assert_file _site/health/index.html
+  local got; got=$(cat _site/apps/index.html | slugs | sort | tr '\n' ' ')
+  [ "$got" = "couch-remote dvf-map health-data-app solar-ev-simulator " ] || fail "apps index lists '$got'"
+}
+
+check_no_nested_output() {
+  [ -e _site/_site-dev ] && fail "_site-dev copied into _site"
+  [ -e _site/_site ] && fail "_site copied into _site"
+  [ -e _site-dev/_site ] && fail "_site copied into _site-dev"
+  local stray; stray=$(find _site -path "*/scripts/*" -o -path "*/tests/*" -o -name "*.ejs.md" -o -name "_quarto*.yml" | head -3)
+  [ -z "$stray" ] || fail "source files in output: $stray"
 }
 
 # ---------------------------------------------------------------- runner

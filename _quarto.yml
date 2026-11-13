@@ -1,11 +1,12 @@
 project:
   type: website
   output-dir: _site
+  post-render: scripts/remove-draft-stubs.ts
   resources:
-    - CNAME
-    - robots.txt
-    - images/favicons/**
-    - assets/**
+    - /CNAME
+    - /robots.txt
+    - /images/favicons/**
+    - /assets/**
   render:
     - "*.qmd"
     - "*.ipynb"

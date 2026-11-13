@@ -1,0 +1,17 @@
+---
+title: "Health & epidemiology"
+page-layout: full
+listing:
+  id: list
+  contents: ["../homelab/*/index.qmd", "../apps/*/index.qmd", "../health/*/*.qmd", "../health/*/*.ipynb"]
+  template: ../_templates/cards.ejs.md
+  fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+  sort: "date desc"
+  template-params:
+    pillar: health
+---
+
+Epidemic models, real-world health data, and global health.
+
+::: {#list}
+:::

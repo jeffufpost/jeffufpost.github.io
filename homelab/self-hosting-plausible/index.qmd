@@ -1,0 +1,11 @@
+---
+title: "Self-hosting Plausible to see where visitors come from"
+description: "Privacy-friendly analytics on my own server, and what it shows about this site."
+date: 2026-11-18
+image: thumb.svg
+pillar: homelab
+draft: true
+
+---
+
+Draft.

@@ -1,0 +1,11 @@
+---
+title: "Tuning underfloor heating with Home Assistant data"
+description: "Using temperature history to stop the floor overshooting."
+date: 2026-11-16
+image: thumb.svg
+pillar: homelab
+draft: true
+
+---
+
+Draft.

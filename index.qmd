@@ -1,7 +1,78 @@
 ---
 title: "Jeffrey Post"
+pagetitle: "Jeffrey Post"
+description: "Homelab and home automation write-ups, small apps built on open data, and public health work."
+page-layout: full
+title-block-banner: false
+listing:
+  - id: featured
+    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb"]
+    template: _templates/featured.ejs.md
+    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+    sort: "date desc"
+  - id: row-homelab
+    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb"]
+    template: _templates/cards.ejs.md
+    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+    sort: "date desc"
+    template-params:
+      pillar: homelab
+      limit: 3
+      exclude-featured: true
+      heading: "Homelab & home automation"
+      blurb: "Self-hosted services, Home Assistant, energy and heating."
+      more-href: /homelab/
+      more-text: "All homelab posts →"
+  - id: row-apps
+    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb"]
+    template: _templates/cards.ejs.md
+    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+    sort: "date desc"
+    template-params:
+      pillar: apps
+      limit: 3
+      exclude-featured: true
+      heading: "Apps"
+      blurb: "Things you can open and use, each with a write-up of how it's built."
+      more-href: /apps/
+      more-text: "All apps →"
+  - id: row-health
+    contents: ["homelab/*/index.qmd", "apps/*/index.qmd", "health/*/*.qmd", "health/*/*.ipynb"]
+    template: _templates/cards.ejs.md
+    fields: [title, description, image, date, path, pillar, kind, status, stack, featured, series, series-page, reading-time]
+    sort: "date desc"
+    template-params:
+      pillar: health
+      limit: 3
+      exclude-featured: true
+      heading: "Health & epidemiology"
+      blurb: "Epidemic models, real-world data, and global health."
+      more-href: /health/
+      more-text: "All health posts →"
 ---
 
-Site under construction.
+::: {.hello}
+# I work with data, run a homelab, and build small apps to answer questions I'm curious about.
 
-<a class="cv-link plausible-event-name=Request+CV" href="mailto:contact@jeffreypost.dev?subject=CV%20request">Request CV</a>
+This is where I write it up: self-hosted infrastructure and home automation, web apps built on open data, and the public health work I trained in.
+
+[M.Sc. Public Health · B.Sc. Electrical Engineering · MBA in progress]{.creds}
+
+::: {.row-btns}
+<a class="cv-link plausible-event-name=Request+CV btn-pill" href="mailto:contact@jeffreypost.dev?subject=CV%20request">Request CV</a>
+<a class="btn-ghost" href="https://github.com/jeffufpost">GitHub</a>
+<a class="btn-ghost" href="mailto:contact@jeffreypost.dev">contact@jeffreypost.dev</a>
+:::
+:::
+
+::: {#featured}
+:::
+
+::: {#row-homelab}
+:::
+
+::: {#row-apps}
+:::
+
+::: {#row-health}
+:::

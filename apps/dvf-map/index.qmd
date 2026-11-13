@@ -1,0 +1,19 @@
+---
+title: "DVF property map"
+description: "Every French property sale, from national prices down to the street, with energy labels."
+date: 2026-11-01
+image: thumb.svg
+pillar: apps
+kind: app
+status: in-progress
+stack: [PostGIS, FastAPI, vector tiles]
+
+---
+
+[In progress]{.chip .chip-in-progress}
+
+Every French property sale, from national prices down to the street, with energy labels.
+
+## How it's built
+
+Build notes coming soon: a public version is being prepared.
