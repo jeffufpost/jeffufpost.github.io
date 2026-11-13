@@ -168,6 +168,31 @@ check_thesis_post() {
   assert_grep '<article class="feat" data-slug="securing-the-homelab">' _site/index.html
 }
 
+check_followup_post() {
+  local d=_site/health/hiv-ssa-after-2019 f=_site/health/hiv-ssa-after-2019/index.html
+  assert_file $f
+  [ -f $f ] || return
+  assert_no_grep 'name="robots" content="noindex"' $f
+  [ "$(grep -o 'class="plotly-graph-div' $f | wc -l)" -ge 5 ] || fail "fewer than 5 interactive figures in $f"
+  [ "$(grep -o 'plotly-2\.35\.2\.min\.js' $f | wc -l)" -eq 1 ] || fail "plotly.js must be loaded exactly once (pinned 2.35.2) in $f"
+  assert_no_grep 'plotly\.js v[0-9]' $f
+  [ "$(grep -o 'role="tab"' $f | wc -l)" -eq 11 ] || fail "expected 11 figure tabs in $f"
+  assert_grep 'What happened after 2019' $f
+  assert_grep 'subject=Thesis%20code%20request' $f
+  assert_grep 'href="../hiv-ssa-thesis/' $f
+  assert_grep 'Liberia' $f
+  assert_grep 'no newer' $f
+  assert_grep 'COVID-19' $f
+  # numbers quoted in the prose (from the local numbers script)
+  assert_grep '1\.08' $f
+  assert_grep '48%' $f
+  assert_grep '47%' $f
+  assert_grep '6 of 28' $f
+  assert_grep 'hiv-ssa-after-2019' _site/health/hiv-ssa-thesis/index.html
+  assert_no_grep '342-576|/mount/|/home/' $d
+  assert_grep '<article class="feat" data-slug="securing-the-homelab">' _site/index.html
+}
+
 check_under_construction() {
   assert_grep '<p class="notice">' _site/index.html
   assert_grep 'under construction' _site/index.html
@@ -280,9 +305,9 @@ check_series() {
 
 check_health_row() {
   local got; got=$(row_html _site/index.html health | slugs | tr '\n' ' ')
-  [ "$got" = "hiv-ssa-thesis stochastic-hiv-model health-data-app " ] || fail "health row is '$got'"
+  [ "$got" = "hiv-ssa-after-2019 hiv-ssa-thesis health-data-app " ] || fail "health row is '$got'"
   got=$(slugs < _site/health/index.html | tr '\n' ' ')
-  for s in hiv-ssa-thesis stochastic-hiv-model epidemic-modelling 2020-04-15-web-scraping 2020-04-12-on-testing 2020-03-12-COVID-19-Tracker health-data-app; do
+  for s in hiv-ssa-after-2019 hiv-ssa-thesis stochastic-hiv-model epidemic-modelling 2020-04-15-web-scraping 2020-04-12-on-testing 2020-03-12-COVID-19-Tracker health-data-app; do
     grep -qw -- "$s" <<<"$got" || fail "health index lacks $s"
   done
   grep -qw 2020-03-15-compartmentalization <<<"$got" && fail "series part listed on health index"
@@ -327,7 +352,7 @@ check_series_card_meta() {
   c=$(card_html _site/health/index.html epidemic-modelling)  # off the homepage row since the thesis post
   grep -q 'min</span>' <<<"$c" && fail "series card shows a reading time"
   grep -q '<span>8 parts · 2020</span>' <<<"$c" || fail "series card does not say '8 parts · 2020'"
-  c=$(card_html _site/index.html stochastic-hiv-model)
+  c=$(card_html _site/health/index.html stochastic-hiv-model)  # off the homepage row since the follow-up post
   grep -q '<span>2 parts · 2021</span>' <<<"$c" || fail "hiv series card does not say '2 parts · 2021'"
 }
 

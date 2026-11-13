@@ -1,0 +1,142 @@
+---
+title: "What happened after 2019? Five more years of HIV data for my thesis"
+description: "My master's thesis stopped in 2019. I extended its epidemic analysis to 2024 with the latest UNAIDS estimates: the groups converged, incidence kept falling, and the past got rewritten."
+date: 2026-11-13
+image: ../images/covers/hiv-ssa-after-2019.svg
+include-in-header:
+  - text: |
+      <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+---
+
+My [master's thesis](../hiv-ssa-thesis/) grouped 29 Sub-Saharan African countries in two ways: by their social and behavioural characteristics, and by how fast their HIV epidemics slowed down. Its data stopped in 2019. UNAIDS now publishes estimates up to 2024, so I went back and asked what happened next.
+
+::: {.callout-note appearance="simple"}
+**What's updated, and what isn't.** Only the epidemic side. The sociobehavioural groups come from national survey (DHS) indicators, and I have no newer national indicators to update them with, so they stay exactly as the thesis defined them. The HIV estimates are UNAIDS's latest, downloaded in May 2026 and running to 2024. Liberia has no incidence figures in this release, so it's left out: 28 countries instead of 29.
+:::
+
+## Four questions
+
+The thesis left me with a few loose ends:
+
+1. The "late decline" countries were still catching up with the "early decline" ones in 2019. Did they converge?
+2. Did incidence keep falling in the three sociobehavioural groups?
+3. Did the COVID-19 years (2020–22) show up?
+4. UNAIDS re-estimates its whole history every year. How much did the past move, and do the thesis conclusions survive it?
+
+Throughout, the groups are held fixed as the thesis defined them, and every curve comes from the new release alone, 1990 to 2024. Mixing the old release up to 2019 with the new one after would create jumps at the seam that aren't real: Kenya's 2019 incidence is 1.47 per 1,000 in one release and 0.79 in the other.
+
+## The two epidemic groups converged
+
+The effective contact rate β measures how easily HIV spreads, regardless of how many people already have it ([the thesis post](../hiv-ssa-thesis/#method) explains it). In 2000, it was 47% higher in the late-decline group than in the early-decline group. By 2019 the gap was down to 15%, and by 2024 to 8%: late-decline β was 1.08 times early-decline β.
+
+```{=html}
+{{< include figures/after1_beta.html >}}
+```
+
+Figure 1. Average effective contact rate β in each group defined by the thesis (17 early-decline and 11 late-decline countries). Use the tabs to see the ratio between the two groups, or every country's curve. The dotted line marks where the thesis data ended.
+
+So on transmission, the two groups have almost become one. Incidence is a different matter: the late-decline group still had about twice the incidence of the early one in 2024 (1.46 against 0.71 new infections per 1,000 adults). The epidemics converged in how fast they move, not yet in how big they are.
+
+## Incidence kept falling everywhere
+
+```{=html}
+{{< include figures/after2_incidence.html >}}
+```
+
+Figure 2. Average incidence among adults aged 15 to 49 in each sociobehavioural group. The log scale shows the three groups falling at similar rates; the indexed view puts them all at 100 in 2019.
+
+Between 2019 and 2024, incidence fell by **48%** in Southern & Eastern Africa (from 2.84 to 1.46 new infections per 1,000 adults), 35% in Western & Central Africa and 36% in the Sahel. The groups are still far apart, but less so: Southern & Eastern Africa had 10 times the Sahel's incidence in 1990, 5.9 times in 2019 and 4.8 times in 2024.
+
+## COVID-19: a slowdown, not a reversal
+
+COVID-19 disrupted HIV testing and treatment in many countries, so I expected the curves to show it. They mostly don't. No group average rises, and in Figure 2 the 2020–22 band looks like any other stretch of road. Looking country by country is more telling:
+
+```{=html}
+{{< include figures/after3_change.html >}}
+```
+
+Figure 3. Average yearly change in incidence for each country, before (2015–19), during (2020–22) and after (2023–24) the pandemic years. *Niger has sat at the "<0.1 per 1,000" reporting floor since 2013, so no change can be measured there.
+
+```python
+# average yearly change, as a percentage
+d = np.log(incidence).diff(axis=1)
+pct = 100 * (np.exp(d[range(2020, 2023)].mean(axis=1)) - 1)
+```
+
+- **Southern & Eastern Africa slowed down.** Its median country went from falling 14.5% a year before the pandemic to 10.6% a year during it, and stayed around there afterwards. Burundi, Kenya, Namibia, Rwanda and Zimbabwe all fell more slowly in 2020–22 than before. But part of that is arithmetic: the lower incidence gets, the harder each further percent becomes.
+- **Elsewhere, the decline held or sped up.** The median country in Western & Central Africa and in the Sahel fell faster during the pandemic years than before them.
+- **Senegal went the wrong way.** Its incidence rose from 0.19 per 1,000 in 2019 to 0.32 in 2022, before easing to 0.28 in 2024. That is still very low, but it's the only clear rise in the data.
+
+One caveat matters a lot here. These are modelled estimates, not counts: UNAIDS and national teams fit epidemic models to surveys and programme data. A model can smooth over a short disruption, especially one that hit testing, which is also how new infections get detected. "No bump in the curve" isn't the same as "no effect on the ground".
+
+## Treatment caught up
+
+The thesis showed testing and treatment spreading fastest in Southern & Eastern Africa. That continued, and the other two groups closed much of the gap:
+
+```{=html}
+{{< include figures/after4_cascade.html >}}
+```
+
+Figure 4. Median across each group's countries of the share of people living with HIV who are on treatment, who know their status, and whose viral load is suppressed. Hover for how many countries each point covers. Viral suppression is shown only where at least three countries in a group report it.
+
+From 2019 to 2024, the share of people living with HIV on treatment went from 80% to 94% in Southern & Eastern Africa, 56% to 80% in Western & Central Africa, and 43% to 68% in the Sahel. Viral suppression reached 91% in the median Southern & Eastern country.
+
+## The past moved too
+
+Every year, UNAIDS and the national teams refit their models to new data and re-estimate the whole series back to 1990. So the 2026 release doesn't just add five years; it rewrites the thirty before them. These revisions aren't errors being fixed so much as better information arriving: new surveys, better models, more complete programme data.
+
+For most countries the revisions are small. Across the 28 countries, the median country's 1990–2019 incidence went up by about 5%. A few moved a lot:
+
+- **Nigeria's** incidence was revised up by 47%, and its prevalence by even more.
+- **DR Congo's** went up by 30%.
+- **Zimbabwe's** 1991 peak went from 50 to 64 new infections per 1,000 adults.
+- **Kenya's** and **Lesotho's** recent years went down: Kenya's 2019 incidence from 1.47 to 0.79, Lesotho's from 11.4 to 7.3.
+- **Peaks moved earlier.** Eleven countries' peak year moved one or two years earlier, and Angola's moved from 2007 to 1999.
+
+Did the thesis survive? I re-ran its β clustering, unchanged, on the revised 1990–2019 data:
+
+```{=html}
+{{< include figures/after5_revisions.html >}}
+```
+
+Figure 5. The six countries that change group when the thesis β clustering is re-run on the revised data. Dashed: the release the thesis used. Solid: the 2026 release.
+
+**6 of 28 countries change group.** Malawi, Nigeria, Rwanda and Sierra Leone move from early to late decline, and Benin and Niger the other way. Most of the differences sit in the early 1990s, the years with the least survey data behind them. And as in the thesis, the split is close: the next-best way of dividing the countries fits only about 1% worse.
+
+What holds up is the pattern the thesis actually concluded from:
+
+- **The sociobehavioural groups still line up with how high each epidemic peaked**: a median peak of 23 new infections per 1,000 adults in Southern & Eastern Africa, 6.4 in Western & Central Africa and 2.8 in the Sahel.
+- **The β groups still line up with when it peaked**: a median peak year of 1991 for early-decline countries and 1996 for late-decline ones, exactly as in the thesis.
+
+What doesn't hold up is which side of the line an individual country sits on. The thesis already called the early/late boundary fragile; the revisions confirm it.
+
+### Two small notes on the data
+
+**The incidence label changed.** The release the thesis used called its indicator "HIV incidence per 1000 population"; the new one says "per 1000 uninfected population". Those are different denominators, and in a country where a quarter of adults have HIV, the second would be a third higher. But the numbers behave as if nothing changed: high-prevalence countries were revised by the same few percent as everyone else, not by the 15–30% a new denominator would cause. So I treat the two as the same indicator with a more precise name. (To convert between them if needed: per population = per uninfected × (1 − prevalence).)
+
+**The β formula is unchanged.** I kept the thesis formula, so the two posts compare like with like. If incidence is per uninfected person, the cleaner formula would be incidence ÷ prevalence; that changes β's level by up to about a third in the highest-prevalence countries, but barely its shape, which is what the clustering compares.
+
+Also, the original post's figures for Mali came from an older UNAIDS file that stopped in 2017, because the release the thesis used had no incidence for Mali. The new release has Mali in full, and it's Liberia that's missing now.
+
+## What it can't say
+
+- **The sociobehavioural side is frozen.** Countries may well have moved on the indicators that defined the groups since 2018; without newer national survey data, I can't tell.
+- **Modelled estimates, revised every year.** Next year's release will move these curves again. The groups are held fixed partly for that reason: re-clustering on the full 1990–2024 series moves 12 countries, which says more about the method's sensitivity than about the epidemics.
+- **National averages.** As in the thesis, everything here hides differences within countries.
+- **Association, not causation.** Convergence and continued decline line up with treatment scale-up, but this analysis can't show that one caused the other.
+
+The code isn't public. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Thesis%20code%20request) and I'll share it. One small piece: the newer UNAIDS export marks values like "<0.1", ">98" and "...", which need translating before any arithmetic:
+
+```python
+def parse(v):
+    v = str(v).strip()
+    if v == "...":
+        return np.nan  # no estimate
+    if v[0] in "<>":
+        return float(v[1:])  # "<0.1" -> 0.1, ">98" -> 98
+    return float(v)
+```
+
+## Related
+
+This is a follow-up to [Revisiting my master's thesis](../hiv-ssa-thesis/), which explains the groups, the effective contact rate and the method in full. For how HIV spreads through a population at the level of individuals, see [my stochastic HIV model](../stochastic-hiv-model/).

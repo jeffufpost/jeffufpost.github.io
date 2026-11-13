@@ -147,6 +147,8 @@ Some honest limits:
 
 The figures here come from re-running the original analysis code on the original data with today's versions of the libraries, then redrawing the charts. Most results match the thesis exactly. A few numbers moved by up to three points, and the text above quotes the re-run, so it may differ slightly from the PDF. Three changes were needed: newer scikit-learn orients the principal components differently; the 2021 UNAIDS export had no incidence figures for Mali, so those came from an earlier UNAIDS release; and the β clustering keeps the best of ten runs instead of a single one (see the limits above). The weights in Figure 1 use a different scale from the percentages in the thesis text, but rank the indicators in much the same order.
 
+I've since extended the epidemic side to 2024 with newer UNAIDS estimates: see [what happened after 2019](../hiv-ssa-after-2019/).
+
 The full code isn't public yet. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Thesis%20code%20request) and I'll share it.
 
 ## Related
