@@ -1,3 +1,16 @@
 _site/
+_site-dev/
+.quarto/
+/.luarc.json
 .jekyll-cache/
 .sass-cache/
+.env*
+*.pem
+*.key
+*.p12
+id_rsa*
+id_ed25519*
+secrets*
+
+/.quarto/
+**/*.quarto_ipynb

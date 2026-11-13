@@ -1,0 +1,21 @@
+project:
+  type: website
+  output-dir: _site
+  resources:
+    - CNAME
+    - robots.txt
+    - images/favicons/**
+  render:
+    - "*.qmd"
+    - "*.ipynb"
+    - "!README.md"
+    - "!tests/"
+    - "!scripts/"
+
+website:
+  title: "Jeffrey Post"
+  site-url: "https://jeffreypost.dev"
+  draft-mode: gone
+
+format:
+  html: default
