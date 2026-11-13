@@ -11,7 +11,7 @@ if (item) {
   const art = item.image ? `<div class="art"><img src="${esc(item.image)}" alt="" loading="lazy"></div>` : `<div class="art"></div>`;
   const kicker = `<span class="kicker" style="color:${colours[item.pillar] || "inherit"}">Featured${labels[item.pillar] ? " · " + labels[item.pillar] : ""}</span>`;
   const rt = item["reading-time"] ? `<div class="meta" style="margin-top:.6rem"><span>${esc(item["reading-time"])}</span></div>` : "";
-  html = `<article class="feat" data-slug="${esc(slugOf(item))}">${art}<div>${kicker}<h2><a href="${esc(item.path)}">${esc(item.title)}</a></h2>${item.description ? `<p>${esc(item.description)}</p>` : ""}${rt}</div></article>`;
+  html = `<article class="feat" data-slug="${esc(slugOf(item))}">${art}<div>${kicker}<h2><a class="feat-link" href="${esc(item.path)}">${esc(item.title)}</a></h2>${item.description ? `<p>${esc(item.description)}</p>` : ""}${rt}</div></article>`;
 }
 %>
 

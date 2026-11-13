@@ -70,6 +70,20 @@ a:focus-visible { outline: 2px solid $c-apps; outline-offset: 2px; }
   p { color: $muted; margin: 0; }
 }
 
+// Whole card is clickable: the title link stretches over the card ("stretched link"),
+// so there is still one link per card for keyboard and screen-reader users.
+.feat, .card { position: relative; transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.15s ease; }
+.feat .feat-link::after, .card .card-link::after { content: ""; position: absolute; inset: 0; z-index: 1; border-radius: inherit; }
+.feat:has(.feat-link), .card:has(.card-link) { cursor: pointer; }
+.feat:has(.feat-link):hover, .card:has(.card-link):hover {
+  border-color: var(--c, #{$line}); box-shadow: 0 6px 18px rgba(16, 24, 40, 0.08); transform: translateY(-2px);
+}
+.card:has(.card-link):hover h3 a { color: var(--c, $c-apps); }
+.feat:has(.feat-link:focus-visible), .card:has(.card-link:focus-visible) { outline: 2px solid var(--c, $c-apps); outline-offset: 2px; }
+.feat .feat-link:focus-visible, .card .card-link:focus-visible { outline: none; }
+.feat .anchorjs-link, .card .anchorjs-link { display: none; }
+@media (prefers-reduced-motion: reduce) { .feat, .card { transition: none; } .feat:hover, .card:hover { transform: none; } }
+
 // Pillar rows and cards
 .pillar { display: grid; gap: 0.9rem; margin-bottom: 2.5rem; }
 .pillar[data-pillar="homelab"] { --c: var(--c-homelab); --tint: #f1ecfb; }
