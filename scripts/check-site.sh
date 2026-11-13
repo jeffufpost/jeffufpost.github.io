@@ -110,19 +110,40 @@ check_chips() {
 
 check_coming_soon() {
   local f=_site/index.html s c got
-  got=$(row_html $f homelab | slugs | tr '\n' ' ')
-  # row is date-desc, limit 3, featured post excluded
-  [ "$got" = "tls-and-cloudflare-access homelab-tour self-hosting-plausible " ] || fail "homelab row is '$got'"
-  for s in $got; do
-    c=$(card_html $f $s)
-    grep -q 'data-status="coming-soon"' <<<"$c" || fail "$s is not coming-soon"
-    grep -q '<span class="chip chip-coming-soon">Coming soon</span>' <<<"$c" || fail "$s has no Coming soon chip"
-    grep -q '<a ' <<<"$c" && fail "coming-soon card $s is linked"
+  got=$(row_html $f homelab | slugs | tr "\n" " ")
+  # written posts first, then coming-soon; limit 3, featured post excluded
+  [ "$got" = "homelab-tour self-hosting-plausible tls-and-cloudflare-access " ] || fail "homelab row is '$got'"
+  c=$(card_html $f tls-and-cloudflare-access)
+  grep -q 'data-status="coming-soon"' <<<"$c" || fail "tls-and-cloudflare-access is not coming-soon"
+  grep -q '<span class="chip chip-coming-soon">Coming soon</span>' <<<"$c" || fail "tls-and-cloudflare-access has no Coming soon chip"
+  grep -q '<a ' <<<"$c" && fail "coming-soon card tls-and-cloudflare-access is linked"
+  assert_grep '<meta name="robots" content="noindex"' _site/homelab/tls-and-cloudflare-access/index.html
+  assert_no_grep 'Draft\.' _site/homelab/tls-and-cloudflare-access/index.html
+}
+
+check_new_homelab_posts() {
+  local s f n
+  for s in underfloor-heating-home-assistant self-hosting-plausible homelab-tour; do
+    f=_site/homelab/$s/index.html
+    assert_file $f
+    [ -f $f ] || continue
+    assert_no_grep 'name="robots" content="noindex"' $f
+    assert_no_grep 'chip-coming-soon' $f
+    assert_grep 'contact@jeffreypost\.dev' $f
+    if grep -oE '192\.168\.[0-9]+\.[0-9]+' $f | grep -vqx '192\.168\.1\.10'; then fail "real-looking LAN IP in $f"; fi
+    assert_no_grep '/mount/|/home/|cloudflareaccess\.com' $f
+    assert_no_grep '(PASSWORD|SECRET|KEY)[A-Z_]*[=:][ "'"'"']*[A-Za-z0-9+/]{6,}' $f
+    grep -q '<article class="card[^"]*" data-slug="'$s'"' _site/homelab/index.html || fail "$s not listed on the homelab page"
   done
-  for s in tls-and-cloudflare-access homelab-tour self-hosting-plausible underfloor-heating-home-assistant; do
-    assert_grep '<meta name="robots" content="noindex"' _site/homelab/$s/index.html
-    assert_no_grep 'Draft\.' _site/homelab/$s/index.html
-  done
+  f=_site/homelab/underfloor-heating-home-assistant/index.html
+  n=$(grep -o 'class="plotly-graph-div' $f | wc -l); [ "$n" -eq 3 ] || fail "heating post has $n figures, expected 3"
+  [ "$(grep -o 'plotly-2\.35\.2\.min\.js' $f | wc -l)" -eq 1 ] || fail "plotly not loaded exactly once in $f"
+  [ "$(grep -o 'role="tab"' $f | wc -l)" -eq 3 ] || fail "heating post should have 3 figure tabs"
+  f=_site/homelab/self-hosting-plausible/index.html
+  n=$(grep -o 'class="plotly-graph-div' $f | wc -l); [ "$n" -eq 1 ] || fail "plausible post has $n figures, expected 1"
+  f=_site/homelab/homelab-tour/index.html
+  [ "$(grep -o '<section>' $f | wc -l)" -ge 7 ] || fail "tour stack grid has fewer than 7 groups"
+  assert_grep '<article class="feat" data-slug="securing-the-homelab">' _site/index.html
 }
 
 check_security_post() {
