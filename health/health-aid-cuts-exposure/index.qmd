@@ -1,0 +1,84 @@
+---
+title: "Who depended most on US health aid? Exposure before the cuts, country by country"
+description: "The US paid for about 40% of the world's health aid. In four countries it funded a quarter of all health spending, and in Malawi it spent twice what the government did. A look at who had the most to lose, using OECD and WHO data."
+date: 2026-11-17
+image: ../images/covers/health-aid-cuts-exposure.svg
+include-in-header:
+  - text: |
+      <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+---
+
+In early 2025 the United States froze most of its foreign aid and dismantled USAID. Other large donors, including the UK, Germany and France, cut their budgets as well. The Institute for Health Metrics and Evaluation (IHME) estimates that development assistance for health went from a peak of about \$80 billion in 2021 to \$39 billion in 2025, and its preliminary figures for 2026 show a further fall of about 5%.
+
+Those are global totals. A cut of that size doesn't land evenly, so I wanted a simpler, country-level question answered: before the cuts, how much of each country's health spending was American money?
+
+**The short answer: the biggest recipients were not the most exposed.** Nigeria and South Africa received the most US health aid in dollars, but it was 4% and 1% of what those countries spend on health. In Zambia, Mozambique, Malawi and Lesotho it was about a quarter of all health spending. And in the poorest countries the comparison with the government's own budget is starker still: in Malawi, the US spent twice as much on health as the government did.
+
+::: {.callout-note appearance="simple"}
+**The data, and what it measures.** Aid: the OECD's Creditor Reporting System, disbursements of official development assistance for health and for population and reproductive health (the category that includes HIV), averaged over 2022–24. Health spending: WHO's Global Health Expenditure Database, latest year available (2021–23), through the World Bank. Countries with more than a million people. This measures **exposure before the cuts, not damage after them**: the OECD's country-level figures for 2025 aren't published yet.
+:::
+
+## How big the US share was
+
+```{=html}
+{{< include figures/a1_timeline.html >}}
+```
+
+Figure 1. Health aid disbursed to developing countries, by who paid it out, in 2024 dollars. "Other donor countries" are governments giving directly; the Global Fund, Gavi and other multilaterals pass on money that governments and foundations gave them.
+
+Health aid doubled between 2005 and 2015, to about \$25 billion a year, jumped to \$42 billion during COVID-19, and was back to \$31 billion in 2024. Through all of it the US was by far the largest single source: \$11.9 billion in 2024, or 38% of the total. That's only the money it gave directly. The US also provided about a third of the Global Fund's budget, which brings its share of all health aid to roughly 44%.
+
+About three quarters of the direct US money (76% in 2024) was in the category that covers HIV. Most of that is PEPFAR, the US HIV programme. That shapes everything below: US health aid went where HIV is.
+
+## Who was most exposed
+
+For each country I estimated the share of all health spending that was US-funded. WHO reports how much of a country's health spending is paid for by donors; the OECD data says how much of the health aid to that country came from the US. Multiply the two:
+
+```python
+us_share = us_health_aid / all_health_aid   # OECD, average 2022-24
+us_funded = external_share * us_share       # WHO: share of health spending paid by donors
+```
+
+```{=html}
+{{< include figures/a2_exposure.html >}}
+```
+
+Figure 2. The 20 countries at the top of three different rankings: US-funded share of all health spending; US health aid compared with what the government spends on health from its own resources; and US health aid in dollars. Hover for the detail.
+
+- **A quarter of all health spending in four countries.** Zambia and Mozambique 27%, Malawi and Lesotho 26%. Then Uganda (22%), Eswatini (21%), Zimbabwe (20%) and Tanzania (19%).
+- **Six countries above 20%, with 131 million people. Thirteen above 10%, with 325 million.**
+- **Eight of the top ten are southern and eastern African countries with large HIV epidemics.** The other two are South Sudan and Haiti. Overall, 82% of the US health aid that went to a specific country went to sub-Saharan Africa.
+- **The dollar ranking is a different list.** Nigeria (\$498 million a year) and South Africa (\$495 million) top it, but their own health spending is so much larger that the US-funded share is 4% and 1%. Losing the money hurts specific programmes there; it doesn't remove a quarter of the health system.
+
+Much of what this money pays for is HIV treatment. In [my follow-up on HIV in Sub-Saharan Africa](../hiv-ssa-after-2019/), 94% of people living with HIV were on treatment in the median Southern & Eastern African country in 2024. The countries at the top of this chart are in that region.
+
+## Compared with what governments spend
+
+The share of total health spending understates the problem in the poorest countries, because "total" includes what households pay out of pocket. The harder question is who would replace the money, and the only candidate with a budget is the government.
+
+```{=html}
+{{< include figures/a3_scatter.html >}}
+```
+
+Figure 3. Each point is a country: what its government spends on health per person per year from its own resources, against US health aid per person. Both axes are logarithmic. On the solid line, the US spent as much as the government; above it, more.
+
+- **In four countries the US spent more on health than the government did**: South Sudan, Malawi, Afghanistan and Haiti. In Malawi, the government spends about \$5 per person a year on health; US health aid was about \$11.
+- **In 15 countries, home to 438 million people, US health aid was at least half the government's health budget.**
+- To replace it from their own budgets, **Mozambique and Uganda would have to roughly double government health spending, and Malawi would have to triple it.**
+- Across the 24 low-income countries taken together, US health aid was worth **46%** of what their governments spend on health. Aid from all donors was worth 166%: more than the governments themselves.
+
+The pattern in the figure is the uncomfortable part. Exposure is highest where governments spend least (rank correlation −0.62). Among the ten most exposed countries, the median government spends \$13 per person per year on health. The countries that depended most on this money are the ones least able to replace it.
+
+## What it can't say
+
+- **Exposure isn't impact.** This is what was at stake, measured before the cuts. The cut wasn't total: parts of the HIV programme kept running, and the amounts are still being renegotiated country by country. What actually happened to clinics, staff and patients needs the 2025 data and, eventually, mortality figures.
+- **Aid on a donor's books isn't the same as spending in a country.** Some of it pays for overheads, technical assistance and goods bought abroad. That's why the headline figure combines WHO's donor-funded share with the US share of aid, and doesn't divide US aid by health spending directly. The two approaches agree closely (rank correlation 0.96; Zambia comes out at 27% one way and 23% the other).
+- **Indirect US money is left out.** Adding a third of Global Fund disbursements raises the US-funded share to about 33% in Malawi and Mozambique and 30% in Zambia. US contributions to Gavi and WHO would add more.
+- **A national share hides the concentration.** The money went mostly to HIV, and to a lesser extent malaria, tuberculosis and maternal health. Within those programmes, dependence was far higher than a quarter.
+- **The baseline has some COVID-19 money in it** (2022 especially), and health accounts in the poorest countries are themselves estimates. Afghanistan and South Sudan, where recorded government spending is \$1 to \$3 per person, should be read as "almost entirely donor-funded" and not as precise ratios.
+
+The code isn't public. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Health%20aid%20post%20code%20request) and I'll share it. The data is open: the OECD Data Explorer (Creditor Reporting System) and WHO's Global Health Expenditure Database. The IHME figures in the introduction are from its *Financing Global Health* reports.
+
+## Related
+
+Most of this money funded HIV programmes in the countries covered by [my master's thesis](../hiv-ssa-thesis/) and its [update to 2024](../hiv-ssa-after-2019/), which shows how far treatment coverage had come by the time the funding changed.
