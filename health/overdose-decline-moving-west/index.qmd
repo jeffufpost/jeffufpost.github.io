@@ -1,7 +1,7 @@
 ---
 title: "US overdose deaths are down 40%. The decline moved from east to west"
 description: "Overdose deaths in the US have fallen for almost three years. State by state, the turn started in Appalachia in 2021 and reached the West three years later. Fentanyl took eight years to cross the country; the peaks came much closer together."
-date: 2026-11-17T10:00:00
+date: 2026-11-03
 image: ../images/covers/overdose-decline-moving-west.svg
 include-in-header:
   - text: |
@@ -102,8 +102,22 @@ All of these are in or next to the Southwest, so the wave hasn't finished moving
 - **State averages.** A state can be falling overall while one city or one group is not.
 - **Timing, not causes.** The east-to-west pattern and the bunched-up peaks are descriptions. They narrow down which explanations are plausible; they don't prove any of them.
 
-The code isn't public. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Overdose%20post%20code%20request) and I'll share it. The data is open: search for "VSRR Provisional Drug Overdose Death Counts" on data.cdc.gov.
+The code isn't public. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Overdose%20post%20code%20request) and I'll share it. The data is open; the links are in the [sources](#sources) below.
 
 ## Related
 
 Asking *when* each curve turned, not just how high it went, is the same idea as the early- and late-decline groups in [my master's thesis on HIV in Sub-Saharan Africa](../hiv-ssa-thesis/). For why an epidemic that runs its own course peaks when it does, see the [epidemic modelling series](../epidemic-modelling/).
+
+## Sources
+
+**Data**
+
+- CDC, National Center for Health Statistics, [VSRR Provisional Drug Overdose Death Counts](https://data.cdc.gov/d/xkb8-kh2a): 12-month counts by state, month and drug, January 2015 to June 2026. Method notes are on the [NCHS overdose data page](https://www.cdc.gov/nchs/nvss/vsrr/drug-overdose-data.htm).
+- US Census Bureau, [Population estimates](https://www.census.gov/programs-surveys/popest.html): state populations by year, for the rates per 100,000.
+- US Census Bureau, [Centers of population](https://www.census.gov/geographies/reference-files/time-series/geo/centers-population.html): the longitude of each state's population centre, 2020.
+
+**Reports and articles**
+
+- Axios, [U.S. overdose deaths drop 12%, per CDC estimates](https://axios.com/2026/11/03/overdose-deaths-falling-cdc), 3 November 2026.
+- Vangelov et al., [Did the illicit fentanyl trade experience a supply shock?](https://www.science.org/doi/10.1126/science.aea6130), *Science*, January 2026; summarised by the [University of Maryland](https://bsos.umd.edu/featured-content/new-study-finds-global-fentanyl-supply-disruption-linked-recent-drop-opioid).
+- FDA, [FDA approves first over-the-counter naloxone nasal spray](https://www.fda.gov/news-events/press-announcements/fda-approves-first-over-counter-naloxone-nasal-spray), 29 March 2023.

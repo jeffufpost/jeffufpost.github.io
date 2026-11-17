@@ -1,7 +1,7 @@
 ---
 title: "Who depended most on US health aid? Exposure before the cuts, country by country"
 description: "The US paid for about 40% of the world's health aid. In four countries it funded a quarter of all health spending, and in Malawi it spent twice what the government did. A look at who had the most to lose, using OECD and WHO data."
-date: 2026-11-17T11:00:00
+date: 2026-11-10
 image: ../images/covers/health-aid-cuts-exposure.svg
 include-in-header:
   - text: |
@@ -77,8 +77,23 @@ The pattern in the figure is the uncomfortable part. Exposure is highest where g
 - **A national share hides the concentration.** The money went mostly to HIV, and to a lesser extent malaria, tuberculosis and maternal health. Within those programmes, dependence was far higher than a quarter.
 - **The baseline has some COVID-19 money in it** (2022 especially), and health accounts in the poorest countries are themselves estimates. Afghanistan and South Sudan, where recorded government spending is \$1 to \$3 per person, should be read as "almost entirely donor-funded" and not as precise ratios.
 
-The code isn't public. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Health%20aid%20post%20code%20request) and I'll share it. The data is open: the OECD Data Explorer (Creditor Reporting System) and WHO's Global Health Expenditure Database. The IHME figures in the introduction are from its *Financing Global Health* reports.
+The code isn't public. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Health%20aid%20post%20code%20request) and I'll share it. The data is open; the links are in the [sources](#sources) below.
 
 ## Related
 
 Most of this money funded HIV programmes in the countries covered by [my master's thesis](../hiv-ssa-thesis/) and its [update to 2024](../hiv-ssa-after-2019/), which shows how far treatment coverage had come by the time the funding changed.
+
+## Sources
+
+**Data**
+
+- OECD, [Creditor Reporting System (CRS)](https://data-explorer.oecd.org/vis?df%5Bds%5D=DisseminateFinalDMZ&df%5Bid%5D=DSD_CRS%40DF_CRS&df%5Bag%5D=OECD.DCD.FSD): official development assistance disbursements by donor, recipient and sector, 2005 to 2024 (sectors 120, health, and 130, population policies and reproductive health).
+- WHO, [Global Health Expenditure Database](https://apps.who.int/nha/database): health spending per person, government health spending, and the share paid by donors and by households.
+- World Bank, [World Development Indicators](https://databank.worldbank.org/source/world-development-indicators): the WHO series above and population, by country and year.
+
+**Reports and articles**
+
+- Institute for Health Metrics and Evaluation, [Financing Global Health 2025: Cuts in Aid and Future Outlook](https://www.healthdata.org/research-analysis/library/financing-global-health-2025-cuts-aid-and-future-outlook), July 2025: the \$80 billion peak in 2021 and \$39 billion in 2025.
+- Think Global Health, [The State of Global Health Funding: October 2026](https://www.thinkglobalhealth.org/article/the-state-of-global-health-funding-october-2026): IHME's preliminary 2026 estimates.
+- OECD, [The latest 2026 ODA projections reveal aid for health is further at risk](https://www.oecd.org/en/data/insights/data-explainers/2026/06/the-latest-2026-oda-projections-reveal-aid-for-health-is-further-at-risk.html), June 2026.
+- The Global Fund, [United States donor profile](https://www.theglobalfund.org/en/government/profiles/united-states/): the US share of Global Fund contributions.
