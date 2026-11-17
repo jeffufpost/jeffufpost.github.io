@@ -326,12 +326,40 @@ check_series() {
 
 check_health_row() {
   local got; got=$(row_html _site/index.html health | slugs | tr '\n' ' ')
-  [ "$got" = "hiv-ssa-after-2019 hiv-ssa-thesis health-data-app " ] || fail "health row is '$got'"
+  [ "$got" = "measles-elimination-model health-aid-cuts-exposure health-data-app " ] || fail "health row is '$got'"
   got=$(slugs < _site/health/index.html | tr '\n' ' ')
-  for s in hiv-ssa-after-2019 hiv-ssa-thesis stochastic-hiv-model epidemic-modelling 2020-04-15-web-scraping 2020-04-12-on-testing 2020-03-12-COVID-19-Tracker health-data-app; do
+  for s in measles-elimination-model health-aid-cuts-exposure overdose-decline-moving-west hiv-ssa-after-2019 hiv-ssa-thesis stochastic-hiv-model epidemic-modelling 2020-04-15-web-scraping 2020-04-12-on-testing 2020-03-12-COVID-19-Tracker health-data-app; do
     grep -qw -- "$s" <<<"$got" || fail "health index lacks $s"
   done
   grep -qw 2020-03-15-compartmentalization <<<"$got" && fail "series part listed on health index"
+}
+
+check_new_health_posts() {
+  # slug:figures:tabs, then a few numbers quoted in each post (from the local numbers scripts)
+  local spec s figs tabs f
+  for spec in measles-elimination-model:4:9 health-aid-cuts-exposure:3:5 overdose-decline-moving-west:4:6; do
+    IFS=: read -r s figs tabs <<<"$spec"
+    f=_site/health/$s/index.html
+    assert_file $f
+    [ -f $f ] || continue
+    assert_no_grep 'name="robots" content="noindex"' $f
+    [ "$(grep -o 'class="plotly-graph-div' $f | wc -l)" -eq "$figs" ] || fail "$s should have $figs interactive figures"
+    [ "$(grep -o 'role="tab"' $f | wc -l)" -eq "$tabs" ] || fail "$s should have $tabs figure tabs"
+    [ "$(grep -o 'plotly-2\.35\.2\.min\.js' $f | wc -l)" -eq 1 ] || fail "plotly.js must be loaded exactly once (pinned 2.35.2) in $f"
+    assert_no_grep 'plotly\.js v[0-9]' $f
+    assert_grep 'code%20request' $f
+    assert_grep 'What it can' $f
+    assert_no_grep '/mount/|/home/' _site/health/$s
+    assert_file _site/health/images/covers/$s.svg
+  done
+  f=_site/health/measles-elimination-model/index.html
+  assert_grep '92\.4%' $f; assert_grep '5,087' $f; assert_grep '8\.8%' $f; assert_grep 'epidemic-modelling' $f
+  f=_site/health/health-aid-cuts-exposure/index.html
+  assert_grep '38%' $f; assert_grep '131 million' $f; assert_grep '46%' $f; assert_grep 'hiv-ssa-after-2019' $f
+  f=_site/health/overdose-decline-moving-west/index.html
+  assert_grep '112,418' $f; assert_grep '65,724' $f; assert_grep '5\.8 years' $f; assert_grep 'hiv-ssa-thesis' $f
+  # not featured: the homelab security post keeps the slot
+  assert_grep '<article class="feat" data-slug="securing-the-homelab">' _site/index.html
 }
 
 check_workflow() {

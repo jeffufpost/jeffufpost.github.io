@@ -1,7 +1,7 @@
 ---
 title: "US overdose deaths are down 40%. The decline moved from east to west"
 description: "Overdose deaths in the US have fallen for almost three years. State by state, the turn started in Appalachia in 2021 and reached the West three years later. Fentanyl took eight years to cross the country; the peaks came much closer together."
-date: 2026-11-17
+date: 2026-11-17T10:00:00
 image: ../images/covers/overdose-decline-moving-west.svg
 include-in-header:
   - text: |

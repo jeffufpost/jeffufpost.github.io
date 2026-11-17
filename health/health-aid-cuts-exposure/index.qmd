@@ -1,7 +1,7 @@
 ---
 title: "Who depended most on US health aid? Exposure before the cuts, country by country"
 description: "The US paid for about 40% of the world's health aid. In four countries it funded a quarter of all health spending, and in Malawi it spent twice what the government did. A look at who had the most to lose, using OECD and WHO data."
-date: 2026-11-17
+date: 2026-11-17T11:00:00
 image: ../images/covers/health-aid-cuts-exposure.svg
 include-in-header:
   - text: |

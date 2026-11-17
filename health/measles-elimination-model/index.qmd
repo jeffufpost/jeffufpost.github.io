@@ -1,7 +1,7 @@
 ---
 title: "The US lost its measles elimination status. A model of why 92% isn't 95%"
 description: "Kindergarten MMR coverage fell from 95.2% to 92.4% in six years, and measles came back. A small stochastic model shows why three points matter so much, and why the national average hides the part that matters most: where the unvaccinated children are."
-date: 2026-11-17
+date: 2026-11-17T12:00:00
 image: ../images/covers/measles-elimination-model.svg
 include-in-header:
   - text: |
