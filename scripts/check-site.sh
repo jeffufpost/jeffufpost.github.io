@@ -326,7 +326,7 @@ check_series() {
 
 check_health_row() {
   local got; got=$(row_html _site/index.html health | slugs | tr '\n' ' ')
-  [ "$got" = "measles-elimination-model hiv-ssa-after-2019 health-data-app " ] || fail "health row is '$got'"
+  [ "$got" = "measles-elimination-model health-aid-cuts-exposure health-data-app " ] || fail "health row is '$got'"
   got=$(slugs < _site/health/index.html | tr '\n' ' ')
   for s in measles-elimination-model health-aid-cuts-exposure overdose-decline-moving-west hiv-ssa-after-2019 hiv-ssa-thesis stochastic-hiv-model epidemic-modelling 2020-04-15-web-scraping 2020-04-12-on-testing 2020-03-12-COVID-19-Tracker health-data-app; do
     grep -qw -- "$s" <<<"$got" || fail "health index lacks $s"

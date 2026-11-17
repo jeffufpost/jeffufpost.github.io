@@ -1,7 +1,7 @@
 ---
 title: "What happened after 2019? Five more years of HIV data for my thesis"
 description: "My master's thesis stopped in 2019. I extended it to 2024 with the latest UNAIDS estimates, which also rewrote the history it was built on. Its main conclusion held up; the country-by-country details didn't all survive."
-date: 2026-11-13
+date: 2026-08-18
 image: ../images/covers/hiv-ssa-after-2019.svg
 include-in-header:
   - text: |

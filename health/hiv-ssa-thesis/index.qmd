@@ -1,7 +1,7 @@
 ---
 title: "Revisiting my master's thesis: sociobehavioural change and HIV in Sub-Saharan Africa"
 description: "Eighteen years of national surveys from 29 countries, reduced to a two-dimensional map. I re-ran the 2021 analysis and redrew every figure so you can explore it."
-date: 2026-11-13
+date: 2026-07-14
 image: ../images/covers/hiv-ssa-thesis.svg
 resources:
   - thesis.pdf
