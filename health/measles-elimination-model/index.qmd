@@ -1,0 +1,111 @@
+---
+title: "The US lost its measles elimination status. A model of why 92% isn't 95%"
+description: "Kindergarten MMR coverage fell from 95.2% to 92.4% in six years, and measles came back. A small stochastic model shows why three points matter so much, and why the national average hides the part that matters most: where the unvaccinated children are."
+date: 2026-11-17
+image: ../images/covers/measles-elimination-model.svg
+include-in-header:
+  - text: |
+      <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+---
+
+The United States was declared free of endemic measles in 2000. Last week, according to press reports, the Pan American Health Organization told the US government that it no longer qualifies: the same chain of transmission has now been running for more than twelve months. Canada lost its status a year ago.
+
+The usual explanation is one number. The share of kindergartners with two doses of the MMR vaccine was 95.2% in 2019–20 and is 92.4% now, below the 95% target. But three points doesn't sound like the difference between "eliminated" and "5,000 cases in a year". So I built a small model to see where the difference comes from.
+
+**The short answer: there are two thresholds, not one.** The first is the familiar one: below about 95% coverage, one imported case can start an outbreak, and the chance and the size both climb fast. The second is about geography: once under-vaccinated communities are common enough to pass measles to each other, a chain can keep going for a year. And that second threshold depends much more on how unevenly the unvaccinated children are spread than on the national average.
+
+::: {.callout-note appearance="simple"}
+**What's data and what's model.** The first two figures are data: case counts from CDC (yearly totals as published; 2026 from the weekly national surveillance tables, to early November) and CDC's annual survey of kindergarten vaccination coverage by state. The last two are simulations, built to compare situations, not to forecast. The limits are [at the end](#what-it-cant-say).
+:::
+
+## What happened
+
+```{=html}
+{{< include figures/m1_cases.html >}}
+```
+
+Figure 1. Confirmed measles cases in the United States. The 2026 bar is provisional and runs to early November. The weekly counts are lumpy because states report in batches.
+
+2025 had 2,289 cases, the most in more than thirty years. 2026 has 5,087 so far, more than twice that, and four times the 2019 total that came close to ending elimination the first time. For comparison, the median year between 2000 and 2024 had 86. The weekly view shows the part that matters for elimination status: since early 2025 there hasn't been a single week without new cases.
+
+```{=html}
+{{< include figures/m2_coverage.html >}}
+```
+
+Figure 2. Share of kindergartners with two MMR doses, by state. The first tab is centred on the 95% target: blue above, orange below. Kansas and Montana didn't report for 2025–26.
+
+- Nationally, coverage went from **95.2% to 92.4%** in six school years. Non-medical exemptions went from 2.2% to 4.0%. About 280,000 children started school this year without two doses.
+- In 2019–20, 20 of the 48 states reporting were at 95% or more, and 3 were below 90%. Now it's **10 at 95% or more, and 18 below 90%**. Those 18 states hold 28% of the country's kindergartners; six years ago the figure was 2%.
+- 42 of the 46 states with data for both years fell. Idaho fell furthest, from 89.1% to 75.2%.
+- The states also moved apart: the spread between them (standard deviation) went from 2.5 to 4.2 points.
+
+## The first threshold
+
+Each person with measles infects about 12 to 18 others in a population where nobody is immune. That number is R0, and I use 13. Two MMR doses protect about 97% of the children who get them. So in a community where a share `coverage` of children is vaccinated, each case infects on average:
+
+```python
+R = R0 * (1 - VE * coverage)     # 13 * (1 - 0.97 * 0.924) = 1.35
+```
+
+When R is below 1, each case infects fewer than one other and chains die out. That happens above 95.2% coverage for R0 = 13 (94.5% for R0 = 12, 97.4% for R0 = 18), which is where the 95% target comes from.
+
+But R only gives the average. To see what one imported case actually does, I simulated it: a community of 2,500 children who mix freely, one infectious visitor, and chance deciding who infects whom. Each step is one generation of infection, about two weeks. It's a coarser cousin of the [stochastic model from my epidemic modelling series](../epidemic-modelling/). I ran it 20,000 times at each coverage level.
+
+```{=html}
+{{< include figures/m3_cliff.html >}}
+```
+
+Figure 3. One imported case in a community of 2,500 children: how often it leads to an outbreak of 20 or more cases, and how big that outbreak gets (line: typical size; band: 9 runs in 10).
+
+| Coverage | Chance of an outbreak | Typical outbreak |
+|---|---|---|
+| 98% | 0.5% | – |
+| 95% | 17% | 40 cases |
+| 92.5% | 45% | 120 cases |
+| 90% | 66% | 212 cases |
+| 85% | 86% | 378 cases |
+| 75% | 97% | 659 cases |
+
+So there's no cliff exactly at 95%, more of a steep slope around it. Going from 95% to 92.5% makes an outbreak 2.7 times more likely and three times bigger, so the average importation produces **five times as many cases** (52 against 10). At 90% it's fourteen times as many. And at 75%, Idaho's statewide figure, an importation almost always takes off and infects nearly every unvaccinated child.
+
+## The second threshold
+
+A single community can't keep measles going for a year. Even at 85% coverage, the outbreak above burns through its susceptible children in about six months. For a chain to last twelve months, it has to move: from one community to the next before it runs out.
+
+So the second experiment has 300 communities of 2,500 children. One in a hundred infectious contacts lands in another community, picked at random. One imported case arrives in a random community.
+
+```python
+# one generation (about two weeks), all communities at once
+lam = R0 / N * ((1 - eps) * I + eps * I.sum() / M)  # pressure on each community
+new = rng.binomial(S, 1 - np.exp(-lam))             # newly infected
+S, I = S - new, new
+```
+
+Then I varied two things: the *average* coverage across all communities, and how *unevenly* it is spread. "Evenly" means every community has the same coverage. "As uneven as US states" means communities differ from each other as much as states do today (a standard deviation of 4.2 points). "Very uneven" doubles that, which is probably closer to how schools and neighbourhoods differ.
+
+```{=html}
+{{< include figures/m4_clusters.html >}}
+```
+
+Figure 4. One imported case in a country of 300 communities: how often the chain of transmission is still going twelve months later, and the average number of cases per importation, by average coverage and by how unevenly that coverage is spread.
+
+- **At a 95% average, evenly spread, a year-long chain almost never happens**: 0.4% of importations. With the same 95% spread as unevenly as US states, it's 8.8%, about twenty times more often. Very uneven, 15%.
+- **Unevenness matters most where the average looks safe.** At a 97% average, an even country is untouchable; an uneven one still gives year-long chains from 3% to 7% of importations. A fifth of its communities are below the threshold even though the country is well above it.
+- **Lower the average and everything gets worse.** With state-like unevenness, going from 95% to 92.5% triples the chance of a year-long chain (8.8% to 26%) and multiplies the cases per importation by nineteen (242 to 4,690).
+- **At today's 92.4%, the three curves are close together.** Even or uneven, between a fifth and three in ten importations start a chain that lasts a year. What differs is the size: the uneven versions produce far larger outbreaks, concentrated in their pockets.
+
+The real pattern looks like the uneven version. Three states account for more than half of this year's cases, and the largest count by far is in Pennsylvania, whose statewide coverage of 92.7% is right on the national average. The state figure says nothing about where inside the state the unvaccinated children are.
+
+## What it can't say
+
+- **The absolute numbers are too pessimistic.** Nobody in the model isolates, nobody gets vaccinated once an outbreak starts, and there are no health departments tracing contacts. The US had dozens of importations a year for 25 years and kept its status, which this model wouldn't allow. What I trust is the comparison between situations, not the percentages themselves.
+- **Kindergartners aren't the population.** Coverage in one school-entry cohort is the best yearly indicator there is, but older children and adults are, on average, better protected. The model's communities are made only of children with the coverage shown.
+- **The communities are a simplification.** Same size, free mixing inside, random contacts between them. Real communities that refuse vaccines are often connected to each other more than to their neighbours, which would make chains last longer than here. Changing the share of outside contacts from 1 in 100 to 1 in 300 or 1 in 30 moves the year-long-chain figure at a 95% average from 9% to 2% or 16%; the ordering of the three curves doesn't change.
+- **R0 is a choice.** With 15 or 18 instead of 13, every threshold moves up by one or two points of coverage. Measles also has superspreading events, which this model averages out.
+- **Elimination is a formal status.** It depends on laboratories linking cases to the same strain, and on how PAHO reads that evidence. The model only asks the simpler question of how long transmission continues.
+
+The code isn't public. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Measles%20model%20code%20request) and I'll share it. The data is open: "Vaccination Coverage and Exemptions among Kindergartners" and the NNDSS weekly tables, both on data.cdc.gov.
+
+## Related
+
+The model is a stripped-down version of the one built step by step in the [epidemic modelling series](../epidemic-modelling/), where Part 4 explains why chance matters when case numbers are small. For another epidemic where the national curve hides very different local ones, see [the US overdose decline, state by state](../overdose-decline-moving-west/).
