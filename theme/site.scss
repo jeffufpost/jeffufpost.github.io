@@ -164,3 +164,6 @@ main.content { max-width: 70ch; }
 .stackgrid li { margin: 0.2rem 0; }
 .stackgrid li b { font-weight: 600; }
 .stackgrid li span { color: $muted; }
+
+// Display equations: wide ones scroll on their own instead of widening the page on phones
+mjx-container[display="true"] { display: block; max-width: 100%; overflow-x: auto; overflow-y: hidden; }
