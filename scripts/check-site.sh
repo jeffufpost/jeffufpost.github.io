@@ -344,9 +344,9 @@ check_series() {
 
 check_health_row() {
   local got; got=$(row_html _site/index.html health | slugs | tr '\n' ' ')
-  [ "$got" = "measles-elimination-model health-aid-cuts-exposure health-data-app " ] || fail "health row is '$got'"
+  [ "$got" = "hiv-mixing measles-elimination-model health-data-app " ] || fail "health row is '$got'"
   got=$(slugs < _site/health/index.html | tr '\n' ' ')
-  for s in measles-elimination-model health-aid-cuts-exposure overdose-decline-moving-west hiv-ssa-after-2019 hiv-ssa-thesis stochastic-hiv-model epidemic-modelling 2020-04-15-web-scraping 2020-04-12-on-testing 2020-03-12-COVID-19-Tracker health-data-app; do
+  for s in hiv-mixing measles-elimination-model health-aid-cuts-exposure overdose-decline-moving-west hiv-ssa-after-2019 hiv-ssa-thesis stochastic-hiv-model epidemic-modelling 2020-04-15-web-scraping 2020-04-12-on-testing 2020-03-12-COVID-19-Tracker health-data-app; do
     grep -qw -- "$s" <<<"$got" || fail "health index lacks $s"
   done
   grep -qw 2020-03-15-compartmentalization <<<"$got" && fail "series part listed on health index"
@@ -379,6 +379,28 @@ check_new_health_posts() {
   f=_site/health/overdose-decline-moving-west/index.html
   assert_grep '112,418' $f; assert_grep '65,724' $f; assert_grep '5\.8 years' $f; assert_grep 'hiv-ssa-thesis' $f
   # not featured: the homelab security post keeps the slot
+  assert_grep '<article class="feat" data-slug="securing-the-homelab">' _site/index.html
+}
+
+check_hiv_mixing() {
+  local d=_site/health/hiv-mixing f=_site/health/hiv-mixing/index.html
+  assert_file $f
+  [ -f $f ] || return
+  assert_no_grep 'name="robots" content="noindex"' $f
+  [ "$(grep -o 'class="plotly-graph-div' $f | wc -l)" -eq 5 ] || fail "hiv-mixing should have 5 interactive figures"
+  [ "$(grep -o 'role="tab"' $f | wc -l)" -eq 7 ] || fail "hiv-mixing should have 7 figure tabs"
+  [ "$(grep -o 'plotly-2\.35\.2\.min\.js' $f | wc -l)" -eq 1 ] || fail "plotly.js must be loaded exactly once (pinned 2.35.2) in $f"
+  assert_no_grep 'plotly\.js v[0-9]' $f
+  assert_grep 'class="math' $f
+  assert_grep 'id="sources"' $f
+  [ "$(sed -n '/id="sources"/,$p' $f | grep -o 'href="https://' | wc -l)" -ge 6 ] || fail "hiv-mixing lists fewer than 6 source links"
+  assert_grep 'code%20request' $f
+  local s
+  for s in hiv-ssa-thesis hiv-ssa-after-2019 stochastic-hiv-model measles-elimination-model 2020-03-15-compartmentalization; do assert_grep "$s" $f; done
+  # numbers quoted in the prose (from the local numbers script)
+  assert_grep '64%' $f; assert_grep '0\.128' $f; assert_grep '0\.047' $f; assert_grep '0\.83' $f
+  assert_no_grep '/mount/|/home/|/zpool' $d
+  assert_file _site/health/images/covers/hiv-mixing.svg
   assert_grep '<article class="feat" data-slug="securing-the-homelab">' _site/index.html
 }
 

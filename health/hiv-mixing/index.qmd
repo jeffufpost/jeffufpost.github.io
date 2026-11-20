@@ -1,0 +1,201 @@
+---
+title: "What a national β hides: mixing in HIV models"
+description: "My thesis summed up each country's HIV epidemic with one national effective contact rate, β. That number assumes everyone mixes evenly. This post works through the maths of what changes when they don't."
+date: 2026-11-24
+image: ../images/covers/hiv-mixing.svg
+include-in-header:
+  - text: |
+      <script src="https://cdn.plot.ly/plotly-2.35.2.min.js" charset="utf-8"></script>
+---
+
+My [master's thesis](../hiv-ssa-thesis/) concluded that how large an HIV epidemic became in each Sub-Saharan African country was largely a matter of its starting conditions, summed up by one number: the national effective contact rate β, calculated from UNAIDS incidence and prevalence. In 1990 it was around 0.27 almost everywhere. By 2019 it was around 0.05.
+
+That number comes from a model in which everyone mixes evenly with everyone else. Real sexual networks don't work like that. A few people have many partners, most have one or none, and people tend to pair up with people like themselves. So this post asks a narrow question, with the maths shown: **when the population is split into groups that mix in different ways, what happens to the model, and what does the national β then measure?**
+
+::: {.callout-note appearance="simple"}
+**What this is and isn't.** Everything below is a deterministic model with illustrative numbers, solved numerically, in the spirit of the [2020 epidemic modelling series](../epidemic-modelling/). The parameters are chosen to land in a realistic range, not fitted to any country. There is one population of adults aged 15 to 49, with no distinction between women and men. The limits are [at the end](#what-this-does-and-doesnt-say).
+:::
+
+## The model the thesis assumed
+
+The thesis rests on the simplest model in this series: [compartments](../2020-03-15-compartmentalization/2020-03-15-compartmentalization.html) of susceptible (S) and infected (I) adults, with N = S + I. As in the [2021 stochastic model](../stochastic-hiv-model/), there is no recovery. People leave the infected compartment when they die, after an average infectious period $T_{Infectious}$ of about 11 years, so at rate $\gamma = 1/11$ per year. Everyone also leaves the 15 to 49 age window at rate $\mu = 1/35$ per year, and new 15-year-olds join as susceptibles:
+
+$$\frac{dS}{dt} = \mu N_0 - \beta \frac{S\,I}{N} - \mu S$$
+
+$$\frac{dI}{dt} = \beta \frac{S\,I}{N} - (\gamma + \mu)\, I$$
+
+As before, $\beta = r\rho$: $r$ partners per year, each with a chance $\rho$ of passing HIV on. Each uninfected person meets an infected one with probability $i(t) = I/N$, so the number of new infections per uninfected person per year is
+
+$$\text{incidence} = \beta\, i(t)$$
+
+so β can be read straight off the data:
+
+$$\beta = \frac{\text{incidence}}{\text{prevalence}}$$
+
+That is how the thesis estimated β from UNAIDS figures, with one difference. UNAIDS reports incidence per 1,000 *uninfected* adults, and the thesis divided by prevalence × (1 − prevalence), as if it were per 1,000 adults. The extra factor inflates β by $1/(1 - \text{prevalence})$: a few percent in most countries, up to a third in the worst years in Southern Africa. The conclusions hold, and the [correction note on the thesis post](../hiv-ssa-thesis/#correction) gives the numbers. Here I use incidence ÷ prevalence throughout.
+
+::: {.callout-note appearance="simple"}
+**Where $\beta S I / N$ comes from: chemistry.** The term is the law of mass action, written down by Guldberg and Waage in 1864 for chemical reactions: in a well-stirred beaker, the rate at which two kinds of molecule react is proportional to the product of their concentrations. Epidemic models borrowed it to describe people instead of molecules, along with its assumption that the beaker is perfectly stirred. Chemical engineers have long had a way of saying how far a real reactor is from that ideal, the "degree of segregation" (Danckwerts, 1958). This post is about how far a sexual network is from a stirred beaker.
+:::
+
+Two quantities follow. The basic reproduction number, the number of people one infected person infects in a fully susceptible population, is $R_0 = \beta D$, where $D = 1/(\gamma + \mu) \approx 8.4$ years is how long someone stays infected and in the age window. With the thesis's β of 0.27, that gives $R_0 = 2.26$. And because β never changes in this model, the national β you would calculate from its output is exactly β, at every point in time:
+
+```{=html}
+{{< include figures/mix1_homogeneous.html >}}
+```
+
+Figure 1. One evenly mixed population with β = 0.27 held constant. Use the tabs to switch between prevalence, incidence and the national β calculated from them.
+
+The national β is a flat line, as it should be. The prevalence curve shows the cost of that simplicity: with β held at 0.27, prevalence climbs past 60% and settles around **64%**. No country got anywhere near that: in the UNAIDS estimates, the highest adult prevalence anywhere peaked just under 30%, in Zimbabwe in 1995 and Eswatini in 2014. In this model, either β has to fall, or the population isn't evenly mixed. The thesis looked at the first. The rest of this post looks at the second.
+
+## Splitting the population into groups
+
+Split the adults into groups $k = 1, 2, \ldots$ with sizes $N_k$ and their own partner rates $r_k$. Keep a single chance of transmission per partnership, $\rho$. Each group now has its own force of infection, the rate at which its uninfected members get infected:
+
+$$\lambda_k(t) = r_k\, \rho \sum_l M_{kl}\, \frac{I_l}{N_l}$$
+
+$M_{kl}$ is the **mixing matrix**: the share of group $k$'s partnerships that are with members of group $l$, so each row adds up to 1. Each group then follows the same equations as before:
+
+$$\frac{dS_k}{dt} = \mu N_k^0 - \lambda_k S_k - \mu S_k$$
+
+$$\frac{dI_k}{dt} = \lambda_k S_k - (\gamma + \mu)\, I_k$$
+
+New adults join each group at a constant rate $\mu N_k^0$. Deaths from HIV aren't replaced, so a group shrinks while the epidemic runs through it, and the groups hit hardest shrink most.
+
+The matrix can't be anything. Every partnership between a member of group $k$ and a member of group $l$ counts once from each side, so the number of partnerships going from $k$ to $l$ must equal the number going from $l$ to $k$:
+
+$$r_k N_k M_{kl} = r_l N_l M_{lk}$$
+
+I use three groups. These numbers are illustrative, not measured. They give an average of 1.91 partners per year, with a few people having many:
+
+| Group | Share of adults | Partners per year |
+|---|---|---|
+| Low activity | 80% | 1 |
+| Medium activity | 17% | 3 |
+| High activity | 3% | 20 |
+
+## Who mixes with whom
+
+Two standard ways to fill in $M$ satisfy the balance condition automatically.
+
+**Random mixing** (also called proportionate mixing). Partners are picked at random, but in proportion to how many partnerships each group has on offer, so a high-activity group supplies more than its share of partners:
+
+$$M_{kl} = \frac{r_l N_l}{\sum_j r_j N_j}$$
+
+**Like with like** (preferential mixing; Nold, 1980; Jacquez and colleagues, 1988). A share $\varepsilon$ of each group's partnerships is reserved for its own members, and the rest are random:
+
+$$M_{kl} = \varepsilon\, \delta_{kl} + (1 - \varepsilon) \frac{r_l N_l}{\sum_j r_j N_j}$$
+
+where $\delta_{kl}$ is 1 when $k = l$ and 0 otherwise. At $\varepsilon = 0$ this is random mixing; at $\varepsilon = 1$ every group only partners within itself. Population geneticists use essentially the same dial for assortative mating, and network scientists measure the same idea as assortativity (Newman, 2002). The [measles post](../measles-elimination-model/) used it too, for the share of contacts outside a child's own community.
+
+## R₀ when partner numbers are uneven
+
+With groups, one infected person's offspring depends on which group they're in, and on which groups their partners are in. The tool for this is the next-generation matrix (Diekmann, Heesterbeek and Metz, 1990). Early in the epidemic, when almost everyone is uninfected, one infected member of group $l$ causes this many new infections in group $k$:
+
+$$K_{kl} = \rho\, D\, r_k\, M_{kl}\, \frac{N_k}{N_l}$$
+
+and $R_0$ is the largest eigenvalue of $K$. With random mixing, $K$ has a simple structure and the eigenvalue comes out in closed form (Anderson and May, 1987):
+
+$$\begin{aligned} R_0 &= \rho D\, \frac{\sum_k r_k^2 N_k}{\sum_k r_k N_k} \\ &= \rho D \left(m + \frac{\sigma^2}{m}\right) \\ &= \rho D\, m\, (1 + CV^2) \end{aligned}$$
+
+where $m$ is the average partner rate, $\sigma^2$ its variance, and $CV = \sigma / m$ its coefficient of variation. What drives the epidemic is not the average number of partners but the average weighted by the number of partners: people with many partners are both more likely to be infected and more likely to pass it on, so they count twice.
+
+With the three groups above, the average partner rate is 1.91 a year and the CV is 1.71. Fix $\rho = 0.052$ per partnership. If everyone had 1.91 partners a year, $R_0$ would be **0.83**: no epidemic at all. With the same average, but spread out as in the table, $R_0$ is 3.25.
+
+```{=html}
+{{< include figures/mix2_spread.html >}}
+```
+
+Figure 2. The same three groups and the same average partner rate, with the spread of partner rates changed (all three rates are moved away from or towards the average). Drag the slider. Top: prevalence in each group and overall. Bottom: $R_0$ for each spread; the dotted line marks $R_0 = 1$.
+
+Below a CV of about 0.45, there's no epidemic. Above it, the epidemic grows faster and peaks higher the more uneven the partner numbers are, with prevalence among the most active far above everyone else's.
+
+::: {.callout-note appearance="simple"}
+**The same result in network physics.** On a network where each person has $k$ contacts, an epidemic can take off when the transmissibility times $\langle k^2 \rangle / \langle k \rangle$ exceeds 1. That ratio is exactly $m(1 + CV^2)$ above. Pastor-Satorras and Vespignani (2001) showed that on networks where the number of contacts is extremely uneven, as in the "scale-free" networks common in social and technological systems, $\langle k^2 \rangle$ is so large that the epidemic threshold almost disappears. It is one of the few results about mixing that holds whatever the system.
+:::
+
+Now hold the spread fixed and turn the like-with-like dial instead:
+
+```{=html}
+{{< include figures/mix3_assortative.html >}}
+```
+
+Figure 3. The same three groups, with ε going from random mixing (0) to everyone partnering only within their own group (1). Top: prevalence by group and overall. Middle: $R_0$. Bottom: overall prevalence after 50 years.
+
+The two lower panels move in opposite directions. As $\varepsilon$ rises from 0 to 1, $R_0$ rises from 3.25 to 8.65, but overall prevalence after 50 years falls from 13.2% to 0.7%. Keeping high-activity people together makes it easier for HIV to take off among them: at $\varepsilon = 1$, $R_0$ is simply that of the high-activity group on its own. But it also cuts the bridges to everyone else. At $\varepsilon = 1$, 89% of the high-activity group is infected after 50 years and almost nobody else is. $R_0$ says how fast an epidemic starts, not how far it reaches.
+
+## What the national β measures
+
+Now feed the grouped model into the thesis formula. The national incidence per uninfected adult is total new infections divided by $S = \sum_k S_k$, and prevalence is $I/N$, so
+
+$$\begin{aligned} \hat\beta(t) &= \frac{\sum_k \lambda_k S_k \,/\, S}{I/N} \\ &= \sum_k \frac{S_k}{S}\; r_k\, \rho \sum_l M_{kl}\, \frac{I_l / N_l}{I / N} \end{aligned}$$
+
+It is an average over uninfected people of their own partner rate times $\rho$, times how much more common HIV is among their partners than in the population as a whole. Nothing in it is fixed. As the epidemic goes on, the weights $S_k/S$ shift towards the low-activity groups, because the high-activity group's uninfected members are the first to be infected and its infected members die. So $\hat\beta$ can fall while every person's behaviour, and every number in the model, stays exactly the same.
+
+To see how much, I set up three populations that the thesis method can't tell apart. Each gets its own $\rho$, chosen so that at the moment prevalence first reaches 5%, the national β is 0.27, the 1990 value in the thesis data. At that moment all three have the same prevalence, the same incidence and the same β. Then I run them forward for 30 years without changing anything:
+
+```{=html}
+{{< include figures/mix4_national_beta.html >}}
+```
+
+Figure 4. National β, calculated as in the thesis, for three populations that share the same prevalence (5%) and the same β (0.27) at year 0. Nothing about anyone's behaviour changes. The second tab shows the high-activity group in the two grouped populations: its uninfected members, and its size, both as a share of its original size.
+
+In the even population, β stays at 0.27. In the two grouped populations, it falls by about half: with random mixing from 0.270 to 0.206 after 5 years, 0.166 after 10, and **0.128** after 29; with like-with-like mixing to 0.133. The second tab shows why. With random mixing, when prevalence passes 5%, the high-activity group is already 46% infected. Twenty-nine years later it is 70% infected, and AIDS deaths have shrunk it to 34% of its original size.
+
+The three populations also go on to very different epidemics:
+
+```{=html}
+{{< include figures/mix5_same_start.html >}}
+```
+
+Figure 5. Prevalence and incidence in the same three populations, from the same starting point.
+
+The even population keeps climbing, to 62% after 29 years. The two grouped ones level off at 12 to 13%, and incidence stays between 13 and 19 new infections per 1,000 uninfected adults a year. So in this model, the same national β at one moment can lead to epidemics five times apart in size, depending on how the population mixes.
+
+How does that compare with the thesis? Using the corrected formula, the average β across the 29 countries was 0.270 in 1990 and **0.047** in 2019, a fall of 83%. In the model, with behaviour held completely constant, β falls from 0.270 to 0.128 over the same 29 years, a fall of 53%. So in this illustrative setup, the structure of the population alone produces a large part of the fall the thesis measured, but not all of it. The rest would have to come from somewhere else: changes in behaviour, treatment from the mid-2000s onwards, or a population structured more unevenly than this one. How large each share is depends on numbers this post made up, so I wouldn't read more into it than that.
+
+## What this does and doesn't say
+
+- **The numbers are illustrative.** Three groups with made-up sizes and partner rates, one transmission chance per partnership. Different numbers give different proportions; what holds whatever the numbers are is the mechanism: uneven partner numbers raise $R_0$ and make the national β fall on its own.
+- **One population, no sexes.** Heterosexual HIV transmission runs between women and men, at different rates in each direction, and much of it in Southern Africa is between young women and older men. None of that is here.
+- **No partnerships.** People have a partner rate, not actual partners. Overlapping partnerships, which spread HIV faster, need a network model.
+- **No change over time other than the epidemic itself.** No behaviour change, no condoms, no circumcision, no treatment. That's deliberate: the question was what happens when nothing changes.
+- **One infectious period.** The model uses the average of 11 years. In reality people are much more infectious in the first months after infection and again late in the illness; the [2020 posts](../2020-04-01-diagnosing-R0-and-peak-infectious/2020-04-01-diagnosing-R0-and-peak-infectious.html) showed that the shape of that distribution matters.
+- **It says nothing about any one country.** That would need data on how each population mixes, and survey data on sexual partners mostly start around 2000, after most epidemics had peaked.
+
+## What comes next
+
+Each of those limits is a next step: women and men; named groups such as sex workers and their clients; actual partnerships; then going back to the 29 countries to see whether survey data on partners and mixing explain anything the national β doesn't.
+
+The code isn't public. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Mixing%20model%20code%20request) and I'll share it.
+
+## Related
+
+- [Revisiting my master's thesis](../hiv-ssa-thesis/) and [what happened after 2019](../hiv-ssa-after-2019/): where the national β comes from.
+- [A stochastic HIV model](../stochastic-hiv-model/): the individual-level model this series started with.
+- [The epidemic modelling series](../epidemic-modelling/), from [compartments](../2020-03-15-compartmentalization/2020-03-15-compartmentalization.html) to $R_0$.
+- [Why 92% isn't 95% for measles](../measles-elimination-model/): another case where a national average hides how unevenly the risk is spread.
+
+## Sources {#sources}
+
+**Data**
+
+- UNAIDS, [AIDSinfo](https://aidsinfo.unaids.org/): HIV incidence and prevalence among adults aged 15 to 49, 2021 release (used in the thesis comparison).
+- United Nations Statistics Division, [SDG indicator 3.3.1 metadata](https://unstats.un.org/sdgs/metadata/files/Metadata-03-03-01.pdf): HIV incidence is defined per 1,000 uninfected population.
+
+**Models and theory**
+
+- Anderson and May, [*Infectious Diseases of Humans: Dynamics and Control*](https://doi.org/10.1093/oso/9780198545996.001.0001), Oxford University Press, 1991.
+- May and Anderson, [Transmission dynamics of HIV infection](https://doi.org/10.1038/326137a0), *Nature*, 1987: $R_0$ with uneven partner numbers.
+- Hethcote and Yorke, [*Gonorrhea Transmission Dynamics and Control*](https://doi.org/10.1007/978-3-662-07544-9), Springer, 1984: the "core group" idea.
+- Nold, [Heterogeneity in disease-transmission modeling](https://doi.org/10.1016/0025-5564(80)90069-3), *Mathematical Biosciences*, 1980: preferential mixing.
+- Jacquez, Simon, Koopman, Sattenspiel and Perry, [Modeling and analyzing HIV transmission: the effect of contact patterns](https://doi.org/10.1016/0025-5564(88)90031-4), *Mathematical Biosciences*, 1988.
+- Garnett and Anderson, [Balancing sexual partnerships in an age and activity stratified model of HIV transmission in heterosexual populations](https://doi.org/10.1093/imammb/11.3.161), *IMA Journal of Mathematics Applied in Medicine and Biology*, 1994.
+- Diekmann, Heesterbeek and Metz, [On the definition and the computation of the basic reproduction ratio R0 in models for infectious diseases in heterogeneous populations](https://doi.org/10.1007/BF00178324), *Journal of Mathematical Biology*, 1990.
+
+**Other fields**
+
+- Voit, Martens and Omholt, [150 years of the mass action law](https://doi.org/10.1371/journal.pcbi.1004012), *PLOS Computational Biology*, 2015: Guldberg and Waage's law and its history.
+- Danckwerts, [The effect of incomplete mixing on homogeneous reactions](https://doi.org/10.1016/0009-2509(58)80040-8), *Chemical Engineering Science*, 1958.
+- Pastor-Satorras and Vespignani, [Epidemic spreading in scale-free networks](https://doi.org/10.1103/PhysRevLett.86.3200), *Physical Review Letters*, 2001.
+- Newman, [Assortative mixing in networks](https://doi.org/10.1103/PhysRevLett.89.208701), *Physical Review Letters*, 2002.
