@@ -116,7 +116,7 @@ Figure 4. Averages across countries in each cluster, 1990 to 2019. Use the tabs 
 
 Countries in the same sociobehavioural group had similar HIV incidence, and the groups differed sharply. Southern & Eastern Africa averaged around 17 new infections per 1,000 adults in 1990; the Sahel, under 2. That gap was already there in 1990. **I found no link between how much a country's indicators changed after 2000 and how much its incidence fell.**
 
-The effective contact rate tells a different story. It fell steeply everywhere, and **almost identically across the three sociobehavioural groups**: from about 0.27–0.29 in 1990 to 0.04–0.05 in 2019. Southern & Eastern Africa started slightly higher and ended slightly lower.
+The effective contact rate tells a different story. It fell steeply everywhere, and **almost identically across the three sociobehavioural groups**: from about 0.27–0.29 in 1990 to 0.04–0.05 in 2019. Southern & Eastern Africa started slightly higher and ended slightly lower (see the [correction](#correction) below: with the corrected formula, the three groups start level).
 
 Clustering the β curves themselves gives two groups that don't follow the sociobehavioural ones:
 
@@ -150,6 +150,21 @@ The figures here come from re-running the original analysis code on the original
 I've since extended the epidemic side to 2024 with newer UNAIDS estimates: see [what happened after 2019](../hiv-ssa-after-2019/).
 
 The full code isn't public yet. [Ask me for it](mailto:contact@jeffreypost.dev?subject=Thesis%20code%20request) and I'll share it.
+
+## Correction (24 November 2026) {#correction}
+
+The UNAIDS file the thesis used labels its incidence "per 1000 population". The indicator is in fact defined per 1,000 *uninfected* adults (it is [SDG indicator 3.3.1](https://unstats.un.org/sdgs/metadata/files/Metadata-03-03-01.pdf), for which UNAIDS is responsible). With that denominator, the effective contact rate is simply incidence ÷ prevalence. The thesis divided by prevalence × (1 − prevalence), which overstates β by a factor of 1 ÷ (1 − prevalence): about 5% at 5% prevalence, about a third at 25%.
+
+Recomputed from the same data:
+
+| β, mean by sociobehavioural group | Thesis formula | Corrected |
+|---|---|---|
+| Southern & Eastern, 1990 | 0.294 | 0.276 |
+| Sahel, 1990 | 0.276 | 0.274 |
+| Western & Central, 1990 | 0.267 | 0.264 |
+| Southern & Eastern, 2019 | 0.044 | 0.039 |
+
+The conclusions stand. The ranking of countries by their 1990 β barely changes (rank correlation 0.985). The statement above that Southern & Eastern Africa started slightly higher no longer holds: corrected, the three groups start level at about 0.27, which makes the finding that β fell almost identically across them stronger. Six countries switch β cluster (Malawi, Nigeria, Rwanda, Sierra Leone, DR Congo and Mali), four of them the same countries that switched when UNAIDS revised its estimates ([see the follow-up](../hiv-ssa-after-2019/#the-past-moved-too)): the fragile early/late boundary described in the limits above. The figures and numbers elsewhere on this page still use the thesis formula, as published. [A later post](../hiv-mixing/) uses the corrected one.
 
 ## Related
 

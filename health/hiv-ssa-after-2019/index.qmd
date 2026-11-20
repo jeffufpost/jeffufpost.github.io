@@ -115,7 +115,7 @@ What doesn't hold up is which side of the line an individual country sits on. Th
 
 **The incidence label changed.** The release the thesis used called its indicator "HIV incidence per 1000 population"; the new one says "per 1000 uninfected population". Those are different denominators, and in a country where a quarter of adults have HIV, the second would be a third higher. But the numbers behave as if nothing changed: high-prevalence countries were revised up only slightly more than low-prevalence ones, well short of the 15–30% a new denominator would add. So I treat the two as the same indicator with a more precise name. (To convert between them if needed: per population = per uninfected × (1 − prevalence).)
 
-**The β formula is unchanged.** I kept the thesis formula, so the two posts compare like with like. If incidence is per uninfected person, the cleaner formula would be incidence ÷ prevalence; that changes β's level by up to about a third in the highest-prevalence countries, but barely its shape, which is what the clustering compares.
+**The β formula is unchanged.** I kept the thesis formula, so the two posts compare like with like. If incidence is per uninfected person, the cleaner formula would be incidence ÷ prevalence; that changes β's level by up to about a third in the highest-prevalence countries, but barely its shape, which is what the clustering compares. The thesis post now has a [correction note](../hiv-ssa-thesis/#correction) with the recomputed values.
 
 Also, the original post's figures for Mali came from an older UNAIDS file that stopped in 2017, because the release the thesis used had no incidence for Mali. The new release has Mali in full, and it's Liberia that's missing now.
 

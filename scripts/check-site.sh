@@ -183,6 +183,9 @@ check_thesis_post() {
   assert_grep 'male circumcision and attitudes to wife beating along the second' $f
   assert_grep 'fell only slowly until about 1995' $f
   assert_no_grep 'Two changes were needed' $f
+  assert_grep 'id="correction"' $f
+  assert_grep '0\.276' $f
+  assert_grep 'hiv-ssa-thesis/#correction' _site/health/hiv-ssa-after-2019/index.html
   [ "$(grep -o 'role="tab"' $f | wc -l)" -eq 11 ] || fail "expected 11 figure tabs in $f"
   assert_no_grep 'the menu' $f
   assert_grep '\.thesis-tabs button\[aria-selected=.?true.?\]' "$(ls _site/site_libs/bootstrap/bootstrap-*.min.css | head -1)"
