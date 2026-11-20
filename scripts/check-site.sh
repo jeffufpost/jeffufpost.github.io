@@ -94,12 +94,15 @@ check_rows() {
 
 check_apps_order() {
   local got; got=$(row_html _site-dev/index.html apps | slugs | tr '\n' ' ')
-  [ "$got" = "dvf-map solar-ev-simulator couch-remote " ] || fail "apps row is '$got'"
+  [ "$got" = "toiture-solaire dvf-map solar-ev-simulator " ] || fail "apps row is '$got'"
 }
 
 check_chips() {
   local f=_site-dev/index.html c
-  c=$(card_html $f couch-remote)
+  c=$(card_html $f toiture-solaire)
+  grep -q '<span class="chip chip-live">Live</span>' <<<"$c" || fail "toiture-solaire has no Live chip"
+  grep -q '<a class="card-link"' <<<"$c" || fail "toiture-solaire card not linked"
+  c=$(card_html _site-dev/apps/index.html couch-remote)   # off the homepage row since toiture-solaire
   grep -q 'data-status="planned"' <<<"$c" || fail "couch-remote not planned"
   grep -q '<span class="chip chip-planned">Planned</span>' <<<"$c" || fail "couch-remote has no Planned chip"
   grep -q '<a ' <<<"$c" && fail "planned card contains a link"
@@ -214,9 +217,24 @@ check_followup_post() {
   assert_grep '<article class="feat" data-slug="securing-the-homelab">' _site/index.html
 }
 
-check_under_construction() {
-  assert_grep '<p class="notice">' _site/index.html
-  assert_grep 'under construction' _site/index.html
+check_no_construction_notice() {
+  assert_no_grep '<p class="notice">' _site/index.html
+  assert_no_grep 'under construction' _site/index.html
+}
+
+check_toiture_solaire() {
+  local f=_site/apps/toiture-solaire/index.html
+  assert_file $f
+  assert_file _site/apps/toiture-solaire/thumb.png
+  assert_file _site/apps/toiture-solaire/art-map.jpg
+  assert_file _site/apps/toiture-solaire/art-plan.jpg
+  assert_grep 'chip-live' $f
+  assert_grep 'href="https://toiture-solaire\.jeffreypost\.dev"' $f
+  assert_grep 'plausible-event-name=Open\+Toiture\+solaire' $f
+  assert_grep 'class="math display"' $f
+  assert_grep 'Sources' $f
+  assert_no_grep 'noindex' $f
+  assert_grep 'data-slug="toiture-solaire" data-status="live"' _site/index.html
 }
 
 check_no_empty_rows() {
@@ -249,7 +267,7 @@ check_section_pages() {
   assert_file _site/apps/index.html
   assert_file _site/health/index.html
   local got; got=$(cat _site/apps/index.html | slugs | sort | tr '\n' ' ')
-  [ "$got" = "couch-remote dvf-map health-data-app solar-ev-simulator " ] || fail "apps index lists '$got'"
+  [ "$got" = "couch-remote dvf-map health-data-app solar-ev-simulator toiture-solaire " ] || fail "apps index lists '$got'"
 }
 
 check_no_nested_output() {

@@ -57,8 +57,6 @@ This is where I write it up: self-hosted infrastructure and home automation, web
 
 [M.Sc. Public Health · B.Sc. Electrical Engineering · MBA in progress]{.creds}
 
-<p class="notice">This site is under construction: homelab write-ups and apps are on their way.</p>
-
 ::: {.row-btns}
 <a class="cv-link plausible-event-name=Request+CV btn-pill" href="mailto:contact@jeffreypost.dev?subject=CV%20request">Request CV</a>
 <a class="btn-ghost" href="https://github.com/jeffufpost">GitHub</a>
