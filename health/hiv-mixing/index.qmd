@@ -46,7 +46,7 @@ Two quantities follow. The basic reproduction number, the number of people one i
 
 Figure 1. One evenly mixed population with β = 0.27 held constant. Use the tabs to switch between prevalence, incidence and the national β calculated from them.
 
-The national β is a flat line, as it should be. The prevalence curve shows the cost of that simplicity: with β held at 0.27, prevalence climbs past 60% and settles around **64%**. No country got anywhere near that: in the UNAIDS estimates, the highest adult prevalence anywhere peaked just under 30%, in Zimbabwe in 1995 and Eswatini in 2014. In this model, either β has to fall, or the population isn't evenly mixed. The thesis looked at the first. The rest of this post looks at the second.
+The national β is a flat line, as it should be. The prevalence curve shows the cost of that simplicity: with β held at 0.27, prevalence climbs past 60% about 70 years in, overshoots to 64%, and settles at **56%**, which is $1 - 1/R_0$. No country got anywhere near that: in the UNAIDS estimates, the highest adult prevalence anywhere peaked just under 30%, in Zimbabwe in 1995 and Eswatini in 2014. In this model, either β has to fall, or the population isn't evenly mixed. The thesis looked at the first. The rest of this post looks at the second.
 
 ## Splitting the population into groups
 
@@ -108,7 +108,7 @@ With the three groups above, the average partner rate is 1.91 a year and the CV 
 
 Figure 2. The same three groups and the same average partner rate, with the spread of partner rates changed (all three rates are moved away from or towards the average). Drag the slider. Top: prevalence in each group and overall. Bottom: $R_0$ for each spread; the dotted line marks $R_0 = 1$.
 
-Below a CV of about 0.45, there's no epidemic. Above it, the epidemic grows faster and peaks higher the more uneven the partner numbers are, with prevalence among the most active far above everyone else's.
+Below a CV of about 0.45, there's no epidemic. Above it, the more uneven the partner numbers, the faster the epidemic grows and the harder it hits the most active group. Overall prevalence doesn't simply keep rising, though. It peaks highest, at about 15%, around a CV of 2.5, then falls again: at the far end of the slider the low-activity majority has so few partners that HIV barely reaches it.
 
 ::: {.callout-note appearance="simple"}
 **The same result in network physics.** On a network where each person has $k$ contacts, an epidemic can take off when the transmissibility times $\langle k^2 \rangle / \langle k \rangle$ exceeds 1. That ratio is exactly $m(1 + CV^2)$ above. Pastor-Satorras and Vespignani (2001) showed that on networks where the number of contacts is extremely uneven, as in the "scale-free" networks common in social and technological systems, $\langle k^2 \rangle$ is so large that the epidemic threshold almost disappears. It is one of the few results about mixing that holds whatever the system.
@@ -152,7 +152,7 @@ Figure 5. Prevalence and incidence in the same three populations, from the same 
 
 The even population keeps climbing, to 62% after 29 years. The two grouped ones level off at 12 to 13%, and incidence stays between 13 and 19 new infections per 1,000 uninfected adults a year. So in this model, the same national β at one moment can lead to epidemics five times apart in size, depending on how the population mixes.
 
-How does that compare with the thesis? Using the corrected formula, the average β across the 29 countries was 0.270 in 1990 and **0.047** in 2019, a fall of 83%. In the model, with behaviour held completely constant, β falls from 0.270 to 0.128 over the same 29 years, a fall of 53%. So in this illustrative setup, the structure of the population alone produces a large part of the fall the thesis measured, but not all of it. The rest would have to come from somewhere else: changes in behaviour, treatment from the mid-2000s onwards, or a population structured more unevenly than this one. How large each share is depends on numbers this post made up, so I wouldn't read more into it than that.
+How does that compare with the thesis? Using the corrected formula, the average β across the 29 countries was 0.270 in 1990 and **0.047** in 2019, a fall of 83%. In this illustrative model, with behaviour held completely constant, β falls from 0.270 to 0.128 over the same 29 years, a fall of 53%, and levels off around 0.13. So a population structured like this one produces a large fall in the national β on its own, though a smaller one than the thesis measured. What that means for real countries, and how it sits alongside the behaviour change and treatment of those years, this model can't say: the 53% comes from group sizes and partner rates this post made up, and different ones would give a different number.
 
 ## What this does and doesn't say
 

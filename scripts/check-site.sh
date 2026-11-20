@@ -401,7 +401,8 @@ check_hiv_mixing() {
   local s
   for s in hiv-ssa-thesis hiv-ssa-after-2019 stochastic-hiv-model measles-elimination-model 2020-03-15-compartmentalization; do assert_grep "$s" $f; done
   # numbers quoted in the prose (from the local numbers script)
-  assert_grep '64%' $f; assert_grep '0\.128' $f; assert_grep '0\.047' $f; assert_grep '0\.83' $f
+  assert_grep '56%' $f; assert_grep '0\.128' $f
+  assert_no_grep 'settles around <strong>64%|peaks higher the more uneven|would have to come from' $f; assert_grep '0\.047' $f; assert_grep '0\.83' $f
   assert_no_grep '/mount/|/home/|/zpool' $d
   assert_file _site/health/images/covers/hiv-mixing.svg
   assert_grep '<article class="feat" data-slug="securing-the-homelab">' _site/index.html
